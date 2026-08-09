@@ -1,6 +1,12 @@
 services:
   app:
     build: .
+    pull_policy: always
     environment:
       PORT: 8081
       ADMIN_TOKEN: OBMENKA24987
+    volumes:
+      - app_data:/usr/src/app/data
+
+volumes:
+  app_data:
