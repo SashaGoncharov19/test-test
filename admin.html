@@ -108,10 +108,34 @@ tbody tr:hover{background:rgba(124,92,255,.06)}
 @media (max-width:900px){
   .cols{grid-template-columns:1fr}
 }
-@media (max-width:560px){
-  .wrap{padding:18px 14px 44px}
+@media (max-width:760px){
+  .wrap{padding:18px 14px calc(44px + env(safe-area-inset-bottom))}
   .row{grid-template-columns:1fr}
+  .toolbar{gap:8px}
   .toolbar input,.toolbar select{width:100%;min-width:0}
+  /* 16px — иначе iOS зумит страницу при фокусе */
+  input,select,textarea{font-size:16px}
+  .card{padding:18px}
+  .top{gap:10px}
+  .top .logo{font-size:16px}
+  .login{margin-top:5vh}
+
+  /* таблица чеков превращается в карточки */
+  .table-scroll{overflow:visible;border:none}
+  table{min-width:0}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tbody tr{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;background:var(--surface)}
+  td{border:none;padding:5px 0;white-space:normal;display:flex;justify-content:space-between;
+    gap:12px;align-items:center}
+  td::before{content:attr(data-label);color:var(--muted);font-size:12px;flex-shrink:0}
+  td:first-child{font-size:16px;padding-bottom:8px}
+  td:last-child{padding-top:10px}
+  td:last-child::before{display:none}
+  .acts{width:100%;gap:8px}
+  .acts .btn{flex:1;padding:11px 8px}
+  .receipt::before,.receipt::after{display:none}
+  .copy-row .btn{width:100%}
 }
 </style>
 </head>
@@ -534,13 +558,13 @@ function renderRows(list){
              '<button class="btn btn-ghost btn-sm" data-act="cancel" data-code="'+esc(c.code)+'">Отменить</button>';
     }
     return '<tr>' +
-      '<td class="mono">' + esc(c.code) + '</td>' +
-      '<td><b>' + fmtNum(c.amount,2) + ' ' + esc(c.currency) + '</b>' +
+      '<td class="mono" data-label="Код">' + esc(c.code) + '</td>' +
+      '<td data-label="Сумма"><b>' + fmtNum(c.amount,2) + ' ' + esc(c.currency) + '</b>' +
         (c.cryptoAmount ? '<div style="color:var(--muted);font-size:12px">' + fmtNum(c.cryptoAmount,8) + ' ' + esc(c.cryptoAsset||'') + '</div>' : '') + '</td>' +
-      '<td><span class="badge b-' + esc(c.status) + '">' + (STATUS_RU[c.status] || esc(c.status)) + '</span></td>' +
-      '<td>' + (esc(c.client) || '—') + (c.delivery ? '<div style="color:var(--muted);font-size:12px">довоз</div>' : '') + '</td>' +
-      '<td>' + fmtDate(c.issuedAt) + '</td>' +
-      '<td>' + fmtDate(c.expiresAt) +
+      '<td data-label="Статус"><span class="badge b-' + esc(c.status) + '">' + (STATUS_RU[c.status] || esc(c.status)) + '</span></td>' +
+      '<td data-label="Клиент">' + (esc(c.client) || '—') + (c.delivery ? '<div style="color:var(--muted);font-size:12px">довоз</div>' : '') + '</td>' +
+      '<td data-label="Выдан">' + fmtDate(c.issuedAt) + '</td>' +
+      '<td data-label="Действителен до">' + fmtDate(c.expiresAt) +
         (c.status === 'active' ? '<div style="color:var(--muted);font-size:12px">осталось ' + leftTime(c.expiresAt) + '</div>' : '') + '</td>' +
       '<td><div class="acts">' + acts + '</div></td>' +
     '</tr>';

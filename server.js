@@ -299,6 +299,203 @@ function transition(code, action, extra = {}) {
   return { check };
 }
 
+/* ─────────────────────────── РЫНОЧНЫЕ КУРСЫ ───────────────────────────
+ * Сервер сам ходит за курсами и кеширует их, сайт берёт готовый снимок.
+ * Источники (по очереди, при сбое — следующий):
+ *   крипта: CoinGecko → Binance
+ *   фиат:   open.er-api.com → exchangerate.host → привязка AED к доллару
+ * Последний удачный снимок сохраняется в data/rates.json и переживает рестарт.
+ * ------------------------------------------------------------------ */
+
+const RATES_FILE = path.join(DATA_DIR, 'rates.json');
+const RATES_REFRESH_MS = Math.max(30, Number(process.env.RATES_REFRESH_SECONDS || 60)) * 1000;
+const RATES_STALE_MS = 15 * 60 * 1000;
+
+const COINS = [
+  { code: 'BTC',  cg: 'bitcoin',           binance: 'BTCUSDT'  },
+  { code: 'ETH',  cg: 'ethereum',          binance: 'ETHUSDT'  },
+  { code: 'USDT', cg: 'tether',            binance: null       },
+  { code: 'USDC', cg: 'usd-coin',          binance: 'USDCUSDT' },
+  { code: 'TON',  cg: 'the-open-network',  binance: 'TONUSDT'  },
+  { code: 'LTC',  cg: 'litecoin',          binance: 'LTCUSDT'  },
+  { code: 'TRX',  cg: 'tron',              binance: 'TRXUSDT'  },
+  { code: 'SOL',  cg: 'solana',            binance: 'SOLUSDT'  },
+  { code: 'BNB',  cg: 'binancecoin',       binance: 'BNBUSDT'  },
+  { code: 'XMR',  cg: 'monero',            binance: null       }
+];
+
+// аварийные значения: используются, только если ни один источник не ответил ни разу
+const FALLBACK = {
+  crypto: {
+    BTC: 96400, ETH: 3420, USDT: 1, USDC: 1, TON: 5.42,
+    LTC: 104.3, TRX: 0.238, SOL: 184.5, BNB: 612, XMR: 168
+  },
+  fiatPerUsd: { AED: 3.6725, EUR: 0.92, USD: 1 }
+};
+
+let rates = null;      // текущий снимок
+let ratesFetching = false;
+
+function emptySnapshot() {
+  const crypto_ = {};
+  for (const c of COINS) crypto_[c.code] = { usd: FALLBACK.crypto[c.code], change24h: 0 };
+  return {
+    updatedAt: null,
+    sources: { crypto: 'fallback', fiat: 'fallback' },
+    crypto: crypto_,
+    fiatPerUsd: { ...FALLBACK.fiatPerUsd }
+  };
+}
+
+function loadRates() {
+  try {
+    const saved = JSON.parse(fs.readFileSync(RATES_FILE, 'utf8'));
+    if (saved && saved.crypto && saved.fiatPerUsd) { rates = saved; return; }
+  } catch (_) {}
+  rates = emptySnapshot();
+}
+
+function saveRates() {
+  const tmp = RATES_FILE + '.tmp-' + process.pid;
+  fsp.writeFile(tmp, JSON.stringify(rates, null, 2), 'utf8')
+    .then(() => fsp.rename(tmp, RATES_FILE))
+    .catch(() => {});
+}
+
+async function getJson(url, timeoutMs = 9000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { 'Accept': 'application/json', 'User-Agent': 'SwapZone/1.0 (+checks-server)' }
+    });
+    if (!res.ok) throw new Error('http_' + res.status);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/* --- крипта: CoinGecko --- */
+async function cryptoFromCoinGecko() {
+  const ids = COINS.map((c) => c.cg).join(',');
+  const data = await getJson(
+    'https://api.coingecko.com/api/v3/simple/price?ids=' + ids +
+    '&vs_currencies=usd&include_24hr_change=true'
+  );
+  const out = {};
+  for (const coin of COINS) {
+    const row = data[coin.cg];
+    if (row && Number.isFinite(Number(row.usd)) && Number(row.usd) > 0) {
+      out[coin.code] = {
+        usd: Number(row.usd),
+        change24h: Number.isFinite(Number(row.usd_24h_change)) ? Number(row.usd_24h_change) : 0
+      };
+    }
+  }
+  if (Object.keys(out).length < 4) throw new Error('coingecko_incomplete');
+  return out;
+}
+
+/* --- крипта: Binance (резерв) --- */
+async function cryptoFromBinance() {
+  const symbols = COINS.filter((c) => c.binance).map((c) => c.binance);
+  const data = await getJson(
+    'https://api.binance.com/api/v3/ticker/24hr?symbols=' +
+    encodeURIComponent(JSON.stringify(symbols))
+  );
+  const bySymbol = new Map((Array.isArray(data) ? data : []).map((r) => [r.symbol, r]));
+  const out = { USDT: { usd: 1, change24h: 0 } };
+  for (const coin of COINS) {
+    if (!coin.binance) continue;
+    const row = bySymbol.get(coin.binance);
+    const price = row && Number(row.lastPrice);
+    if (Number.isFinite(price) && price > 0) {
+      out[coin.code] = { usd: price, change24h: Number(row.priceChangePercent) || 0 };
+    }
+  }
+  if (Object.keys(out).length < 4) throw new Error('binance_incomplete');
+  return out;
+}
+
+/* --- фиат --- */
+async function fiatFromErApi() {
+  const data = await getJson('https://open.er-api.com/v6/latest/USD');
+  const r = data && data.rates;
+  if (!r || !Number.isFinite(Number(r.AED)) || !Number.isFinite(Number(r.EUR))) throw new Error('erapi_bad');
+  return { USD: 1, AED: Number(r.AED), EUR: Number(r.EUR) };
+}
+async function fiatFromExchangerateHost() {
+  const data = await getJson('https://api.exchangerate.host/latest?base=USD&symbols=AED,EUR');
+  const r = data && data.rates;
+  if (!r || !Number.isFinite(Number(r.AED)) || !Number.isFinite(Number(r.EUR))) throw new Error('exhost_bad');
+  return { USD: 1, AED: Number(r.AED), EUR: Number(r.EUR) };
+}
+
+async function refreshRates() {
+  if (ratesFetching) return rates;
+  ratesFetching = true;
+
+  const next = {
+    updatedAt: rates && rates.updatedAt,
+    sources: { crypto: rates ? rates.sources.crypto : 'fallback', fiat: rates ? rates.sources.fiat : 'fallback' },
+    crypto: { ...rates.crypto },
+    fiatPerUsd: { ...rates.fiatPerUsd }
+  };
+  let changed = false;
+
+  // крипта
+  try {
+    const fresh = await cryptoFromCoinGecko();
+    Object.assign(next.crypto, fresh);
+    next.sources.crypto = 'coingecko';
+    changed = true;
+  } catch (errA) {
+    try {
+      const fresh = await cryptoFromBinance();
+      Object.assign(next.crypto, fresh);
+      next.sources.crypto = 'binance';
+      changed = true;
+    } catch (errB) {
+      console.error('[rates] крипта недоступна:', errA.message, '/', errB.message);
+    }
+  }
+
+  // фиат (AED привязан к доллару, поэтому расхождения минимальны, но проверяем)
+  try {
+    next.fiatPerUsd = await fiatFromErApi();
+    next.sources.fiat = 'open.er-api.com';
+    changed = true;
+  } catch (errA) {
+    try {
+      next.fiatPerUsd = await fiatFromExchangerateHost();
+      next.sources.fiat = 'exchangerate.host';
+      changed = true;
+    } catch (errB) {
+      console.error('[rates] фиат недоступен:', errA.message, '/', errB.message);
+    }
+  }
+
+  if (changed) {
+    next.updatedAt = new Date().toISOString();
+    rates = next;
+    saveRates();
+  }
+  ratesFetching = false;
+  return rates;
+}
+
+function ratesResponse() {
+  const updatedMs = rates.updatedAt ? Date.parse(rates.updatedAt) : 0;
+  return {
+    ...rates,
+    stale: !updatedMs || (Date.now() - updatedMs > RATES_STALE_MS),
+    refreshSeconds: Math.round(RATES_REFRESH_MS / 1000),
+    serverTime: new Date().toISOString()
+  };
+}
+
 /* ─────────────────────────── УВЕДОМЛЕНИЯ ─────────────────────────── */
 
 function postJson(urlString, payload) {
@@ -407,7 +604,22 @@ const server = http.createServer(async (req, res) => {
   try {
     /* --- health --- */
     if (urlPath === '/api/health' && req.method === 'GET') {
-      return sendJson(res, 200, { ok: true, time: new Date().toISOString(), checks: Object.keys(db.checks).length });
+      return sendJson(res, 200, {
+        ok: true,
+        time: new Date().toISOString(),
+        checks: Object.keys(db.checks).length,
+        ratesUpdatedAt: rates && rates.updatedAt,
+        ratesSources: rates && rates.sources
+      });
+    }
+
+    /* --- рыночные курсы --- */
+    if (urlPath === '/api/rates' && req.method === 'GET') {
+      if (!rateLimit('rates:' + ip, 120, 60_000)) return sendJson(res, 429, { error: 'rate_limited' });
+      // если снимок протух — пробуем обновить, но ответ не блокируем надолго
+      const age = rates.updatedAt ? Date.now() - Date.parse(rates.updatedAt) : Infinity;
+      if (age > RATES_REFRESH_MS) refreshRates().catch(() => {});
+      return sendJson(res, 200, ratesResponse());
     }
 
     /* --- публичная проверка чека --- */
@@ -489,6 +701,11 @@ server.requestTimeout = 30_000;
 /* ─────────────────────────── СТАРТ ─────────────────────────── */
 
 loadDb();
+loadRates();
+
+// первая синхронизация курсов сразу, дальше — по таймеру
+refreshRates().catch(() => {});
+setInterval(() => { refreshRates().catch(() => {}); }, RATES_REFRESH_MS).unref();
 
 server.listen(PORT, HOST, () => {
   const shown = process.env.ADMIN_TOKEN ? '(из переменной ADMIN_TOKEN)' : ADMIN_TOKEN;

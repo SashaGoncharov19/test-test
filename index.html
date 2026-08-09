@@ -55,6 +55,8 @@ p{margin:0}
   -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%);
 }
 .container{width:100%;max-width:var(--container);margin:0 auto;padding:0 20px}
+/* якорные ссылки не должны прятать заголовок под липкой шапкой */
+section,[id]{scroll-margin-top:calc(var(--header-h) + 14px)}
 
 /* ============ КНОПКИ ============ */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 26px;border-radius:999px;
@@ -436,43 +438,165 @@ footer{border-top:1px solid var(--line);padding:56px 0 30px;background:rgba(0,0,
   .f-grid{grid-template-columns:1fr 1fr;gap:28px}
   section{padding:70px 0}
 }
+
+/* ---------- ПЛАНШЕТ И ТЕЛЕФОН ---------- */
 @media (max-width:760px){
-  :root{--header-h:64px}
+  :root{--header-h:60px}
+  section{padding:58px 0}
+  .sec-head{margin-bottom:32px}
+  .sec-head p{font-size:15.5px}
+
   .g2,.g3,.g4{grid-template-columns:1fr}
   .contact-grid,.legal-grid{grid-template-columns:1fr}
-  .company-box{grid-template-columns:1fr;padding:20px}
-  .rates-search{margin-left:0;width:100%}
-  .rates-search input{width:100%}
-  .tabs{width:100%}
-  .tab{flex:1;text-align:center}
-  .sec-head{margin-bottom:36px}
-  .cta{padding:40px 22px}
-  .hero-stats{grid-template-columns:1fr;max-width:none}
-  .hero-stats .st{display:flex;align-items:baseline;gap:10px}
-  .hero-stats .st b{font-size:20px}
-  .timeline{padding-left:60px}
-  .timeline::before{left:21px;top:22px;bottom:22px}
-  .tstep{padding:18px}
-  .tstep .num{width:44px;height:44px;font-size:17px;left:-60px;top:16px;border-radius:13px;box-shadow:0 0 0 5px var(--bg)}
-  .cookie{flex-direction:column;align-items:stretch;text-align:center;left:12px;right:12px;bottom:12px}
-  .tg-float span{display:none}
-  .tg-float{padding:14px;border-radius:50%;left:16px;bottom:16px}
-  .to-top{right:16px;bottom:16px}
-  .modal-box{padding:24px 20px;max-height:90vh}
-  .f-bottom{flex-direction:column;text-align:center}
-}
-@media (max-width:520px){
-  .container{padding:0 16px}
-  .exchange-card{padding:18px}
-  .ex-line input{font-size:21px}
-  .cur-list{width:min(88vw,290px)}
-  .hero-actions .btn{width:100%}
-  .card{padding:20px}
-  section{padding:56px 0}
-  .f-grid{grid-template-columns:1fr}
+
+  /* хедер и меню */
+  .header .container{gap:12px}
+  .logo{font-size:17px}
+  .logo-mark{width:34px;height:34px;font-size:17px;border-radius:10px}
+  .mobile-menu{height:calc(100dvh - var(--header-h));padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+
+  /* hero */
+  .hero{padding:34px 0 52px}
+  .hero .chip{border-radius:14px;line-height:1.45;padding:9px 14px}
+  .hero .lead{font-size:16px;margin-bottom:24px}
+  .hero-actions{gap:10px;margin-bottom:26px}
+  .hero-stats{grid-template-columns:1fr;max-width:none;gap:10px}
+  .hero-stats .st{display:flex;align-items:baseline;gap:10px;padding:13px 16px}
+  .hero-stats .st b{font-size:19px}
+  .hero-stats .st span{font-size:12px}
+
+  /* калькулятор */
+  .exchange-card{padding:18px;border-radius:20px}
+  .exchange-card::before{border-radius:21px}
+  .ex-head h3{font-size:17px}
+  .ex-row{padding:12px 14px}
+  .ex-line{gap:8px}
+  .ex-line input{font-size:22px}
+  .cur-btn{padding:8px 11px;font-size:13.5px;gap:7px}
+  .cico{width:24px;height:24px;font-size:10.5px}
+  /* выпадающий список во всю ширину карточки, без вылета за экран */
+  .cur-list{position:fixed;left:12px;right:12px;top:auto;bottom:calc(12px + env(safe-area-inset-bottom));
+    width:auto;max-height:58dvh;border-radius:18px;padding:10px;z-index:95;
+    box-shadow:0 -20px 60px -20px rgba(0,0,0,.95)}
+  /* пока открыт список валют — убираем плавающие кнопки */
+  body.sheet-open .tg-float,body.sheet-open .to-top{opacity:0;pointer-events:none}
+  .cur-item{padding:12px 10px}
+  .ex-info{font-size:13px}
+  .ex-info .r{gap:10px}
+
+  /* поля: 16px, иначе iOS зумит страницу при фокусе */
+  input,select,textarea,.cur-search,.verify input,.rates-search input{font-size:16px}
+
+  /* таймлайн */
+  .timeline{padding-left:56px}
+  .timeline::before{left:19px;top:20px;bottom:20px}
+  .tstep{padding:18px 16px}
+  .tstep h3{font-size:16.5px}
+  .tstep .num{width:40px;height:40px;font-size:16px;left:-56px;top:16px;border-radius:12px;
+    box-shadow:0 0 0 5px var(--bg)}
+
+  /* чек */
+  .receipt{padding:20px}
   .receipt .amount{font-size:28px}
   .receipt .code{font-size:16px;letter-spacing:.16em}
+  .verify{padding:16px}
+  .verify .vrow{flex-direction:column}
+  .verify input{min-width:0;width:100%}
+  .verify .vrow .btn{width:100%}
+
+  /* офис */
+  .map-box{min-height:230px;padding:22px}
+  .map-box .pin{font-size:36px}
+  .o-row .ic{width:38px;height:38px;font-size:16px}
+  .o-row .v{font-size:14.5px}
+
+  /* курсы: вместо горизонтальной таблицы — карточки */
+  .rates-top{padding:12px}
+  .tabs{width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;white-space:nowrap}
+  .rates-search{margin-left:0;width:100%}
+  .rates-search input{width:100%}
+  .table-scroll{overflow:visible}
+  table{min-width:0}
+  thead{display:none}
+  table,tbody,tr,td{display:block;width:100%}
+  tbody tr{border-top:1px solid var(--line);padding:14px 16px}
+  tbody tr:hover{background:none}
+  td{border:none;padding:5px 0;white-space:normal;display:flex;justify-content:space-between;
+    align-items:center;gap:12px;font-size:14px}
+  td::before{content:attr(data-label);color:var(--muted);font-size:12.5px;flex-shrink:0}
+  td:first-child{padding-bottom:10px}
+  td:first-child::before{display:none}
+  td:first-child .pair{font-size:15.5px}
+  td:last-child{padding-top:10px}
+  td:last-child::before{display:none}
+  td:last-child .mini-btn{width:100%;padding:11px}
+
+  /* партнёрка и довоз */
+  .partner{padding:24px 18px;gap:26px}
+  .pcalc{padding:18px}
+  .pcalc .out{font-size:29px}
+
+  /* прочее */
+  .cta{padding:36px 20px}
+  .cta p{font-size:15px}
+  .company-box{grid-template-columns:1fr;padding:18px;gap:12px}
+  .company-box .row{flex-direction:column;gap:2px;align-items:flex-start}
+  .company-box .row span:last-child{text-align:left;overflow-wrap:anywhere}
+  .contact-item .v{overflow-wrap:anywhere}
+  .qa .q{padding:17px 16px;font-size:15px}
+  .qa .a p{padding:0 16px 17px}
+  .f-bottom{flex-direction:column;text-align:center}
+
+  /* плавающие элементы: не наезжают друг на друга и учитывают «чёлку» */
+  .tg-float{padding:14px;border-radius:50%;left:16px;bottom:calc(16px + env(safe-area-inset-bottom))}
+  .tg-float span{display:none}
+  .to-top{right:16px;bottom:calc(16px + env(safe-area-inset-bottom))}
+  .cookie{flex-direction:column;align-items:stretch;text-align:center;left:12px;right:12px;
+    bottom:calc(12px + env(safe-area-inset-bottom));padding:16px}
+  /* пока висит баннер cookie — прячем кнопки, чтобы не перекрывали текст */
+  body.cookie-open .tg-float,body.cookie-open .to-top{opacity:0;pointer-events:none;transform:translateY(140%)}
+
+  /* модалка — как нижняя шторка */
+  .modal{padding:0;align-items:flex-end}
+  .modal-box{max-height:88dvh;border-radius:22px 22px 0 0;padding:24px 18px calc(28px + env(safe-area-inset-bottom))}
 }
+
+/* ---------- УЗКИЕ ЭКРАНЫ ---------- */
+@media (max-width:520px){
+  .container{padding:0 15px}
+  section{padding:50px 0}
+  .card{padding:19px}
+  .f-grid{grid-template-columns:1fr;gap:24px}
+  .hero-actions .btn,.cta .btn,.office .btn,.partner .btn{width:100%}
+  .btn{white-space:normal;text-align:center;line-height:1.3}
+  .sec-head h2{font-size:26px}
+  .ex-line input{font-size:20px}
+  .receipt::before,.receipt::after{display:none}
+}
+
+/* ---------- САМЫЕ УЗКИЕ (320–360) ---------- */
+@media (max-width:380px){
+  .container{padding:0 13px}
+  .ex-line{flex-wrap:wrap}
+  .ex-line input{flex:1 1 100%;font-size:24px}
+  .cur-select{width:100%}
+  .cur-btn{width:100%;justify-content:space-between}
+  .ex-row .lbl{font-size:12px}
+  .logo{font-size:16px}
+  .chip{font-size:12px}
+  .tstep .num{width:36px;height:36px;font-size:15px;left:-50px}
+  .timeline{padding-left:50px}
+  .timeline::before{left:17px}
+}
+
+/* ---------- ГОРИЗОНТАЛЬНАЯ ОРИЕНТАЦИЯ ---------- */
+@media (max-height:520px) and (orientation:landscape){
+  .mobile-menu{padding-top:14px}
+  .modal-box{max-height:94dvh}
+}
+
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
@@ -549,7 +673,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 30px;background:rgba(0,0,
         <div class="exchange-card">
           <div class="ex-head">
             <h3>Расчёт суммы к выдаче</h3>
-            <span class="chip"><span class="dot"></span> Курс обновлён <span id="rateTime">только что</span></span>
+            <span class="chip"><span class="dot"></span> Курс обновлён <span id="rateTime">загрузка…</span></span>
           </div>
 
           <div class="ex-row">
@@ -784,7 +908,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 30px;background:rgba(0,0,
     <div class="sec-head reveal">
       <span class="sec-tag">Курсы</span>
       <h2>Курсы выдачи наличных</h2>
-      <p>Ориентировочные значения, пересчитываются каждые 30 секунд. Итоговый курс подтверждает менеджер в Telegram.</p>
+      <p>Рыночные данные CoinGecko и Binance, обновляются каждую минуту. Итоговый курс подтверждает менеджер в Telegram.</p>
     </div>
     <div class="rates-wrap reveal">
       <div class="rates-top">
@@ -1066,7 +1190,7 @@ var CRYPTO = [
   {c:'BNB', n:'BNB',                usd:612,   col:'#f3ba2f', ic:'B', dec:4, min:0.9,    net:'BEP-20'},
   {c:'XMR', n:'Monero',             usd:168,   col:'#ff6600', ic:'ɱ', dec:4, min:3,      net:'Monero'}
 ];
-CRYPTO.forEach(function(x){ if(!x.k) x.k = x.c; });
+CRYPTO.forEach(function(x){ if(!x.k) x.k = x.c; x.ch = 0; });
 
 var CASH = [
   {c:'USD', n:'Доллары США, наличные',   usd:1,      col:'#85bb65', ic:'$', dec:0, res:850000},
@@ -1185,12 +1309,14 @@ function bindSearch(el, textOf){
 function closeLists(){
   $$('.cur-list').forEach(function(l){ l.classList.remove('open'); });
   $$('.cur-btn').forEach(function(b){ b.classList.remove('open'); });
+  document.body.classList.remove('sheet-open');
 }
 function toggleList(btn, list){
   var isOpen = list.classList.contains('open');
   closeLists();
   if(!isOpen){
     list.classList.add('open'); btn.classList.add('open');
+    document.body.classList.add('sheet-open');
     var s = list.querySelector('.cur-search');
     if(s){ s.value = ''; s.dispatchEvent(new Event('input')); if(window.innerWidth > 760) s.focus(); }
   }
@@ -1215,6 +1341,7 @@ function syncUI(){
 
 /* ================= КАЛЬКУЛЯТОР ================= */
 var giveInp = $('#giveAmount'), getInp = $('#getAmount');
+var lastEdited = 'give';   // какое поле правил пользователь последним
 
 function calc(src){
   var g = byKey[state.give], r = byCash[state.get];
@@ -1237,8 +1364,8 @@ function calc(src){
   $('#feeLine').textContent = (fee*100).toFixed(1).replace('.',',') + '% (уже в курсе)';
   refreshBotLink();
 }
-giveInp.addEventListener('input', function(){ calc('give'); });
-getInp.addEventListener('input',  function(){ calc('get'); });
+giveInp.addEventListener('input', function(){ lastEdited = 'give'; calc('give'); });
+getInp.addEventListener('input',  function(){ lastEdited = 'get';  calc('get');  });
 $('#setMin').addEventListener('click', function(){ giveInp.value = byKey[state.give].min; calc('give'); });
 
 /* ================= ПЕРЕХОД В БОТА ================= */
@@ -1274,20 +1401,22 @@ function refreshBotLink(){
 }
 
 /* ================= ТИКЕР ================= */
-(function(){
+function renderTicker(){
   var seen = {}, items = '';
   CRYPTO.forEach(function(x){
     if(seen[x.c]) return;
     seen[x.c] = 1;
-    var ch = (Math.random()*8 - 3);
+    var ch = x.ch || 0;
     items += '<div class="tk">' + icoHTML(x) + '<span>' + x.c + '</span><span class="p">$' +
       fmt(x.usd, x.usd < 1 ? 4 : 2) + '</span><span class="' + (ch>=0?'up':'down') + '">' +
       (ch>=0?'▲':'▼') + ' ' + Math.abs(ch).toFixed(2) + '%</span></div>';
   });
-  items += '<div class="tk">' + icoHTML(byCash.AED) + '<span>USD/AED</span><span class="p">3,6725</span></div>';
-  items += '<div class="tk">' + icoHTML(byCash.EUR) + '<span>EUR/USD</span><span class="p">1,0900</span></div>';
+  items += '<div class="tk">' + icoHTML(byCash.AED) + '<span>USD/AED</span><span class="p">' +
+           fmt(1/byCash.AED.usd, 4) + '</span></div>';
+  items += '<div class="tk">' + icoHTML(byCash.EUR) + '<span>EUR/USD</span><span class="p">' +
+           fmt(byCash.EUR.usd, 4) + '</span></div>';
   $('#ticker').innerHTML = items + items;
-})();
+}
 
 /* ================= ТАБЛИЦА КУРСОВ ================= */
 function renderRates(filter, query){
@@ -1298,13 +1427,13 @@ function renderRates(filter, query){
       var name = a.c + ' → ' + b.c;
       if(query && (name + ' ' + a.n + ' ' + a.net).toLowerCase().indexOf(query) === -1) return;
       var k = (a.usd / b.usd) * (1 - feeFor(5000));
-      var ch = (Math.random()*6 - 2.4);
+      var ch = a.ch || 0;
       html += '<tr>' +
-        '<td><div class="pair">' + icoHTML(a) + icoHTML(b) + '<span>' + name + '</span></div></td>' +
-        '<td>1 ' + a.c + ' = ' + fmt(k, 2) + ' ' + b.c + '</td>' +
-        '<td class="' + (ch>=0?'up':'down') + '">' + (ch>=0?'+':'−') + Math.abs(ch).toFixed(2) + '%</td>' +
-        '<td>' + fmt(a.min, a.dec) + ' ' + a.c + '</td>' +
-        '<td>' + a.net + '</td>' +
+        '<td data-label="Направление"><div class="pair">' + icoHTML(a) + icoHTML(b) + '<span>' + name + '</span></div></td>' +
+        '<td data-label="Курс выдачи">1 ' + a.c + ' = ' + fmt(k, 2) + ' ' + b.c + '</td>' +
+        '<td data-label="Изм. 24ч" class="' + (ch>=0?'up':'down') + '">' + (ch>=0?'+':'−') + Math.abs(ch).toFixed(2) + '%</td>' +
+        '<td data-label="Мин. сумма">' + fmt(a.min, a.dec) + ' ' + a.c + '</td>' +
+        '<td data-label="Сеть">' + a.net + '</td>' +
         '<td><button class="mini-btn" data-from="' + a.k + '" data-to="' + b.c + '">Рассчитать</button></td>' +
         '</tr>';
     });
@@ -1570,8 +1699,16 @@ document.addEventListener('keydown', function(e){
 
 /* ================= COOKIE ================= */
 var cookieBar = $('#cookie'), accepted = false;
-setTimeout(function(){ if(!accepted) cookieBar.classList.add('show'); }, 1800);
-$('#cookieOk').addEventListener('click', function(){ accepted = true; cookieBar.classList.remove('show'); });
+setTimeout(function(){
+  if(accepted) return;
+  cookieBar.classList.add('show');
+  document.body.classList.add('cookie-open');   /* прячем плавающие кнопки под баннером */
+}, 1800);
+$('#cookieOk').addEventListener('click', function(){
+  accepted = true;
+  cookieBar.classList.remove('show');
+  document.body.classList.remove('cookie-open');
+});
 
 /* ================= АНИМАЦИИ ================= */
 var io = new IntersectionObserver(function(entries){
@@ -1605,17 +1742,124 @@ var cio = new IntersectionObserver(function(entries){
 }, {threshold:.5});
 $$('[data-count]').forEach(function(el){ cio.observe(el); });
 
-/* ================= ОБНОВЛЕНИЕ КУРСОВ ================= */
-setInterval(function(){
+/* ================= СИНХРОНИЗАЦИЯ РЫНОЧНЫХ КУРСОВ =================
+   Порядок источников:
+     1) наш сервер /api/rates (он сам ходит на CoinGecko/Binance и er-api)
+     2) если сервера нет — CoinGecko и open.er-api.com напрямую из браузера
+     3) если недоступно всё — остаются встроенные значения, и мы честно
+        помечаем их как резервные
+   ================================================================= */
+var CG_IDS = {
+  BTC:'bitcoin', ETH:'ethereum', USDT:'tether', USDC:'usd-coin', TON:'the-open-network',
+  LTC:'litecoin', TRX:'tron', SOL:'solana', BNB:'binancecoin', XMR:'monero'
+};
+var ratesState = { ok:false, at:null, source:null };
+
+function applyRates(cryptoMap, fiatPerUsd, source){
+  var touched = 0;
   CRYPTO.forEach(function(x){
-    if(x.c !== 'USDT' && x.c !== 'USDC') x.usd = x.usd * (1 + (Math.random() - 0.5) * 0.004);
+    var row = cryptoMap && cryptoMap[x.c];
+    if(row && isFinite(row.usd) && row.usd > 0){
+      x.usd = row.usd;
+      x.ch = isFinite(row.change24h) ? row.change24h : 0;
+      touched += 1;
+    }
   });
+  if(fiatPerUsd){
+    CASH.forEach(function(x){
+      var per = Number(fiatPerUsd[x.c]);
+      if(isFinite(per) && per > 0){ x.usd = 1 / per; touched += 1; }
+    });
+  }
+  if(!touched) return false;
+
+  ratesState = { ok:true, at:new Date(), source:source };
   refreshMins();
   syncUI();
-  calc('give');
+  calc(lastEdited);
+  renderTicker();
   renderRates(curFilter, curQuery);
-  $('#rateTime').textContent = 'только что';
-}, 30000);
+  updateRateStamp();
+  return true;
+}
+
+function updateRateStamp(){
+  var el = $('#rateTime');
+  if(!el) return;
+  if(!ratesState.ok){
+    el.textContent = 'резервные значения';
+    el.title = 'Не удалось получить рыночные курсы. Актуальный курс подтвердит менеджер.';
+    return;
+  }
+  var d = ratesState.at;
+  el.textContent = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  el.title = 'Источник: ' + (ratesState.source || 'сервер');
+}
+
+function withTimeout(promise, ms){
+  return new Promise(function(resolve, reject){
+    var t = setTimeout(function(){ reject(new Error('timeout')); }, ms);
+    promise.then(function(v){ clearTimeout(t); resolve(v); },
+                 function(e){ clearTimeout(t); reject(e); });
+  });
+}
+function getJson(url, ms){
+  return withTimeout(
+    fetch(url, { headers:{ 'Accept':'application/json' } }).then(function(r){
+      if(!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    }), ms || 9000);
+}
+
+/* источник 1 — свой сервер */
+function fromServer(){
+  return getJson(CFG.apiBase + '/api/rates', 8000).then(function(d){
+    if(!d || !d.crypto) throw new Error('bad payload');
+    var src = (d.sources && d.sources.crypto) || 'сервер';
+    if(d.sources && d.sources.crypto === 'fallback' && d.sources.fiat === 'fallback'){
+      throw new Error('server has no live rates');
+    }
+    if(!applyRates(d.crypto, d.fiatPerUsd, src)) throw new Error('nothing applied');
+    return true;
+  });
+}
+
+/* источник 2 — публичные API напрямую из браузера */
+function fromPublicApis(){
+  var ids = Object.keys(CG_IDS).map(function(k){ return CG_IDS[k]; }).join(',');
+  var coins = getJson('https://api.coingecko.com/api/v3/simple/price?ids=' + ids +
+                      '&vs_currencies=usd&include_24hr_change=true', 9000);
+  var fiat  = getJson('https://open.er-api.com/v6/latest/USD', 9000).catch(function(){ return null; });
+
+  return Promise.all([coins, fiat]).then(function(res){
+    var raw = res[0] || {}, fx = res[1];
+    var map = {};
+    Object.keys(CG_IDS).forEach(function(code){
+      var row = raw[CG_IDS[code]];
+      if(row && isFinite(row.usd)) map[code] = { usd:Number(row.usd), change24h:Number(row.usd_24h_change) || 0 };
+    });
+    var fiatPerUsd = (fx && fx.rates && isFinite(fx.rates.AED))
+      ? { USD:1, AED:Number(fx.rates.AED), EUR:Number(fx.rates.EUR) }
+      : null;
+    if(!applyRates(map, fiatPerUsd, 'coingecko')) throw new Error('nothing applied');
+    return true;
+  });
+}
+
+function syncRates(){
+  return fromServer()
+    .catch(function(){ return fromPublicApis(); })
+    .catch(function(){
+      if(!ratesState.ok) updateRateStamp();  // оставляем встроенные значения
+    });
+}
+
+syncRates();
+setInterval(syncRates, 60000);
+/* при возврате на вкладку обновляем курс сразу */
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden) syncRates();
+});
 
 /* ================= СТАРТ ================= */
 $('#year').textContent = new Date().getFullYear();
@@ -1624,7 +1868,9 @@ $$('a[href^="https://t.me/SwapZoneBot"]').forEach(function(a){ a.href = CFG.botU
 syncUI();
 giveInp.value = byKey[state.give].min;
 calc('give');
+renderTicker();
 renderRates('all','');
+updateRateStamp();
 })();
 </script>
 </body>
