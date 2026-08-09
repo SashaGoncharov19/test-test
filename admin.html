@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SwapZone — панель выпуска чеков</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230b0f1c'/><text x='50' y='68' font-size='58' text-anchor='middle' fill='%2322d3ee'>S</text></svg>">
+<style>
+:root{
+  --bg:#070a14;--surface:rgba(255,255,255,.04);--surface-2:rgba(255,255,255,.07);
+  --line:rgba(255,255,255,.1);--line-strong:rgba(255,255,255,.18);
+  --txt:#eaf0ff;--muted:#8e9ab8;--cyan:#22d3ee;--violet:#7c5cff;
+  --green:#2ee6a8;--red:#ff5c7a;--amber:#ffb648;
+  --grad:linear-gradient(135deg,#7c5cff,#22d3ee);--radius:16px;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-size:15px;line-height:1.55;
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(600px 400px at 10% -10%,rgba(124,92,255,.25),transparent 70%),
+             radial-gradient(600px 400px at 90% 10%,rgba(34,211,238,.16),transparent 70%)}
+h1,h2,h3{margin:0;letter-spacing:-.02em;line-height:1.2}
+a{color:var(--cyan)}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 20px 60px}
+.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:26px}
+.logo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:18px}
+.logo i{width:36px;height:36px;border-radius:11px;background:var(--grad);display:grid;place-items:center;
+  color:#0a0d18;font-style:normal;font-weight:900}
+.top .spacer{margin-left:auto}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 13px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.pill.on .dot{background:var(--green);box-shadow:0 0 0 4px rgba(46,230,168,.18)}
+.pill.off .dot{background:var(--red)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+.grid{display:grid;gap:20px}
+.cols{grid-template-columns:minmax(0,420px) minmax(0,1fr);align-items:start}
+label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+input,select,textarea{width:100%;padding:11px 13px;border-radius:11px;background:rgba(0,0,0,.35);
+  border:1px solid var(--line);color:var(--txt);outline:none;font:inherit;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:rgba(34,211,238,.55);box-shadow:0 0 0 4px rgba(34,211,238,.1)}
+input.err{border-color:var(--red)}
+select option{background:#0d1223}
+textarea{resize:vertical;min-height:70px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{margin-bottom:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:11px;
+  border:1px solid transparent;font-weight:600;font-size:14.5px;cursor:pointer;transition:.2s;white-space:nowrap}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--grad);color:#0a0d18}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px)}
+.btn-ghost{background:var(--surface-2);border-color:var(--line);color:var(--txt)}
+.btn-ghost:hover:not(:disabled){border-color:var(--line-strong)}
+.btn-sm{padding:7px 12px;font-size:13px;border-radius:9px}
+.btn-block{width:100%}
+.msg{display:none;margin-top:12px;padding:11px 13px;border-radius:11px;font-size:13.5px}
+.msg.ok{display:block;background:rgba(46,230,168,.1);border:1px solid rgba(46,230,168,.32);color:var(--green)}
+.msg.bad{display:block;background:rgba(255,92,122,.1);border:1px solid rgba(255,92,122,.32);color:var(--red)}
+.msg.info{display:block;background:rgba(34,211,238,.09);border:1px solid rgba(34,211,238,.28);color:var(--cyan)}
+
+/* чек */
+.receipt{background:linear-gradient(180deg,#101627,#0b1020);border:1px solid var(--line-strong);
+  border-radius:18px;padding:22px;position:relative;margin-top:16px}
+.receipt::before,.receipt::after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;
+  background:var(--bg);top:calc(50% - 11px)}
+.receipt::before{left:-12px}.receipt::after{right:-12px}
+.receipt .rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+.receipt .amount{font-size:30px;font-weight:800;letter-spacing:-.03em}
+.receipt .sub{font-size:12.5px;color:var(--muted)}
+.receipt hr{border:none;border-top:1px dashed var(--line-strong);margin:16px 0}
+.receipt .rrow{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:4px 0}
+.receipt .rrow span:first-child{color:var(--muted)}
+.receipt .rrow span:last-child{font-weight:600;text-align:right}
+.receipt .code{margin-top:14px;padding:12px;border-radius:11px;background:rgba(0,0,0,.45);
+  border:1px dashed var(--line-strong);text-align:center;font-family:ui-monospace,Menlo,monospace;
+  font-size:19px;letter-spacing:.2em;font-weight:700}
+.copy-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+
+/* таблица */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar input,.toolbar select{width:auto;min-width:150px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.stat{padding:8px 13px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line);font-size:13px}
+.stat b{font-size:15px}
+.table-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius)}
+table{width:100%;border-collapse:collapse;min-width:860px;font-size:13.5px}
+th{text-align:left;padding:12px 14px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);background:rgba(0,0,0,.3);white-space:nowrap;font-weight:600}
+td{padding:12px 14px;border-top:1px solid var(--line);white-space:nowrap}
+tbody tr:hover{background:rgba(124,92,255,.06)}
+.mono{font-family:ui-monospace,Menlo,monospace;letter-spacing:.05em}
+.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.b-active{background:rgba(46,230,168,.13);color:var(--green);border:1px solid rgba(46,230,168,.3)}
+.b-redeemed{background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.3)}
+.b-expired{background:rgba(255,182,72,.12);color:var(--amber);border:1px solid rgba(255,182,72,.3)}
+.b-cancelled{background:rgba(255,92,122,.12);color:var(--red);border:1px solid rgba(255,92,122,.3)}
+.acts{display:flex;gap:6px}
+.hint{font-size:12.5px;color:var(--muted);margin-top:8px}
+.empty{padding:36px;text-align:center;color:var(--muted)}
+
+/* логин */
+.login{max-width:440px;margin:9vh auto 0}
+.login .card{padding:28px}
+.login h1{font-size:23px;margin-bottom:6px}
+.login p{color:var(--muted);font-size:14px;margin:0 0 20px}
+.hidden{display:none!important}
+@media (max-width:900px){
+  .cols{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .wrap{padding:18px 14px 44px}
+  .row{grid-template-columns:1fr}
+  .toolbar input,.toolbar select{width:100%;min-width:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= ЛОГИН ================= -->
+<div class="login" id="loginView">
+  <div class="card">
+    <div class="logo" style="margin-bottom:16px"><i>S</i> SwapZone · панель чеков</div>
+    <h1>Вход для сотрудников</h1>
+    <p>Введите админ-токен. Он выводится в консоли при запуске <span class="mono">server.js</span> и хранится в <span class="mono">data/admin-token.txt</span>.</p>
+    <div class="field">
+      <label for="tokenInput">Админ-токен</label>
+      <input type="password" id="tokenInput" placeholder="••••••••••••" autocomplete="current-password">
+    </div>
+    <label style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);margin-bottom:16px">
+      <input type="checkbox" id="rememberToken" style="width:16px;height:16px;accent-color:#7c5cff" checked>
+      Запомнить на этом устройстве
+    </label>
+    <button class="btn btn-primary btn-block" id="loginBtn">Войти</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- ================= ПАНЕЛЬ ================= -->
+<div class="wrap hidden" id="appView">
+  <div class="top">
+    <div class="logo"><i>S</i> SwapZone · панель чеков</div>
+    <span class="pill" id="apiPill"><span class="dot"></span> <span id="apiText">проверка связи…</span></span>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost btn-sm" id="refreshBtn">Обновить</button>
+    <button class="btn btn-ghost btn-sm" id="logoutBtn">Выйти</button>
+  </div>
+
+  <div class="grid cols">
+    <!-- выпуск чека -->
+    <div class="card">
+      <h2 style="font-size:18px;margin-bottom:4px">Выпустить чек</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 18px">Заполняется после зачисления криптовалюты. Код сразу становится валидным.</p>
+
+      <div class="row">
+        <div class="field">
+          <label for="amount">Сумма к выдаче *</label>
+          <input type="number" id="amount" min="0" step="any" inputmode="decimal" placeholder="4820">
+        </div>
+        <div class="field">
+          <label for="currency">Валюта *</label>
+          <select id="currency">
+            <option value="AED">AED — дирхам</option>
+            <option value="USD">USD — доллар</option>
+            <option value="EUR">EUR — евро</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="cryptoAsset">Принято (монета)</label>
+          <input type="text" id="cryptoAsset" placeholder="USDT" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="cryptoAmount">Сумма крипты</label>
+          <input type="number" id="cryptoAmount" min="0" step="any" inputmode="decimal" placeholder="5000">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="rate">Курс (1 монета = X валюты)</label>
+          <input type="number" id="rate" min="0" step="any" inputmode="decimal" placeholder="3.66">
+        </div>
+        <div class="field">
+          <label for="network">Сеть</label>
+          <input type="text" id="network" placeholder="TRC-20" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="ttl">Срок действия, часов *</label>
+          <input type="number" id="ttl" min="1" max="720" step="1" value="48">
+        </div>
+        <div class="field">
+          <label for="manager">Менеджер</label>
+          <input type="text" id="manager" placeholder="@manager" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="client">Клиент (Telegram / имя)</label>
+        <input type="text" id="client" placeholder="@username" autocomplete="off">
+      </div>
+
+      <div class="field">
+        <label for="pickup">Место выдачи</label>
+        <input type="text" id="pickup" value="Marina Plaza, офис 2902, Dubai Marina">
+      </div>
+
+      <label style="display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--muted);margin-bottom:13px">
+        <input type="checkbox" id="delivery" style="width:16px;height:16px;accent-color:#7c5cff">
+        Довоз наличных по адресу (от 100 000 AED)
+      </label>
+
+      <div class="field">
+        <label for="note">Комментарий (виден только сотрудникам)</label>
+        <textarea id="note" placeholder="Например: хеш транзакции, договорённости по времени"></textarea>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="createBtn">Создать чек</button>
+      <div class="msg" id="createMsg"></div>
+
+      <div id="receiptBox"></div>
+    </div>
+
+    <!-- список чеков -->
+    <div class="card">
+      <h2 style="font-size:18px;margin-bottom:14px">Выпущенные чеки</h2>
+      <div class="stats" id="stats"></div>
+      <div class="toolbar">
+        <select id="filterStatus">
+          <option value="all">Все статусы</option>
+          <option value="active">Действующие</option>
+          <option value="redeemed">Погашенные</option>
+          <option value="expired">Просроченные</option>
+          <option value="cancelled">Аннулированные</option>
+        </select>
+        <input type="text" id="filterQuery" placeholder="Поиск: код, клиент, комментарий">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:0">
+          <input type="checkbox" id="autoRefresh" style="width:16px;height:16px;accent-color:#7c5cff" checked>
+          Автообновление
+        </label>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Код</th><th>Сумма</th><th>Статус</th><th>Клиент</th><th>Выдан</th><th>Действителен до</th><th></th></tr>
+          </thead>
+          <tbody id="tbody"><tr><td colspan="7" class="empty">Загрузка…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="hint">Ссылка для клиента на проверку чека: <span class="mono" id="verifyHintUrl">/?check=SZ-XXXXXX</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ================= НАСТРОЙКИ ================= */
+var CFG = {
+  apiBase: '',                              // '' = тот же домен, что и админка
+  siteUrl: window.location.origin + '/',    // адрес публичного сайта для ссылок в чеке
+  office:  'Marina Plaza, офис 2902, 54 этаж, Dubai Marina, Дубай'
+};
+
+/* ================= УТИЛИТЫ ================= */
+function $(s){ return document.querySelector(s); }
+function pad(n){ return n < 10 ? '0'+n : ''+n; }
+function fmtNum(v, d){
+  var n = Number(v);
+  if(!isFinite(n)) return '—';
+  return n.toLocaleString('ru-RU',{minimumFractionDigits:0,maximumFractionDigits:(d==null?2:d)});
+}
+function fmtDate(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return '—';
+  return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+', '+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function leftTime(iso){
+  var ms = new Date(iso).getTime() - Date.now();
+  if(ms <= 0) return 'истёк';
+  var h = Math.floor(ms/3600000), m = Math.floor(ms%3600000/60000);
+  if(h >= 24) return Math.floor(h/24)+' д '+(h%24)+' ч';
+  return h > 0 ? h+' ч '+m+' мин' : m+' мин';
+}
+function show(el, type, html){
+  el.className = 'msg ' + type;
+  el.innerHTML = html;
+}
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+/* ================= ТОКЕН И ЗАПРОСЫ ================= */
+var TOKEN_KEY = 'swapzone_admin_token';
+var token = '';
+try { token = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || ''; } catch(e){}
+
+function api(path, options){
+  options = options || {};
+  var headers = { 'Accept':'application/json' };
+  if(options.body) headers['Content-Type'] = 'application/json';
+  if(token) headers['X-Admin-Token'] = token;
+  return fetch(CFG.apiBase + path, {
+    method: options.method || 'GET',
+    headers: headers,
+    body: options.body ? JSON.stringify(options.body) : undefined
+  }).then(function(res){
+    return res.text().then(function(text){
+      var data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch(e){ data = { error:'bad_response' }; }
+      return { ok: res.ok, status: res.status, data: data };
+    });
+  });
+}
+
+var ERRORS = {
+  unauthorized:'Неверный админ-токен.',
+  validation:'Проверьте заполнение полей.',
+  not_found:'Чек не найден.',
+  already_redeemed:'Чек уже погашен.',
+  cancelled:'Чек аннулирован.',
+  expired:'Срок действия чека истёк — сначала продлите его.',
+  rate_limited:'Слишком много запросов, подождите минуту.',
+  bad_json:'Некорректный запрос.',
+  bad_code:'Некорректный номер чека.',
+  internal:'Ошибка сервера. Проверьте логи server.js.'
+};
+function errText(data){
+  if(!data) return 'Нет ответа от сервера.';
+  if(data.details && data.details.length) return data.details.join('; ');
+  return ERRORS[data.error] || ('Ошибка: ' + (data.error || 'неизвестно'));
+}
+
+/* ================= ЛОГИН ================= */
+var loginView = $('#loginView'), appView = $('#appView');
+
+function openApp(){
+  loginView.classList.add('hidden');
+  appView.classList.remove('hidden');
+  loadChecks();
+  pingHealth();
+}
+function openLogin(msg){
+  appView.classList.add('hidden');
+  loginView.classList.remove('hidden');
+  if(msg) show($('#loginMsg'), 'bad', msg);
+}
+$('#loginBtn').addEventListener('click', function(){
+  var value = $('#tokenInput').value.trim();
+  if(!value){ show($('#loginMsg'),'bad','Введите токен.'); return; }
+  token = value;
+  var btn = this;
+  btn.disabled = true;
+  show($('#loginMsg'),'info','Проверяем токен…');
+  api('/api/admin/checks?limit=1').then(function(r){
+    btn.disabled = false;
+    if(r.status === 401){ token=''; show($('#loginMsg'),'bad','Неверный токен.'); return; }
+    if(!r.ok){ show($('#loginMsg'),'bad', errText(r.data)); return; }
+    try {
+      var store = $('#rememberToken').checked ? localStorage : sessionStorage;
+      store.setItem(TOKEN_KEY, token);
+    } catch(e){}
+    $('#loginMsg').className = 'msg';
+    openApp();
+  }).catch(function(){
+    btn.disabled = false;
+    show($('#loginMsg'),'bad','Сервер недоступен. Запущен ли server.js?');
+  });
+});
+$('#tokenInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('#loginBtn').click(); });
+$('#logoutBtn').addEventListener('click', function(){
+  token = '';
+  try { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } catch(e){}
+  $('#tokenInput').value = '';
+  openLogin();
+});
+
+/* ================= СТАТУС СЕРВЕРА ================= */
+function pingHealth(){
+  var pill = $('#apiPill'), text = $('#apiText');
+  fetch(CFG.apiBase + '/api/health').then(function(r){ return r.json(); }).then(function(d){
+    pill.className = 'pill on';
+    text.textContent = 'сервер на связи · чеков: ' + (d.checks != null ? d.checks : '—');
+  }).catch(function(){
+    pill.className = 'pill off';
+    text.textContent = 'сервер недоступен';
+  });
+}
+setInterval(pingHealth, 30000);
+
+/* ================= СОЗДАНИЕ ЧЕКА ================= */
+function receiptHTML(c){
+  var link = CFG.siteUrl + '?check=' + encodeURIComponent(c.code);
+  return '<div class="receipt">' +
+    '<div class="rh"><b>SwapZone</b><span class="badge b-active">Действителен</span></div>' +
+    '<div class="sub">К выдаче наличными</div>' +
+    '<div class="amount">' + fmtNum(c.amount, 2) + ' ' + esc(c.currency) + '</div>' +
+    (c.cryptoAmount ? '<div class="sub">за ' + fmtNum(c.cryptoAmount, 8) + ' ' + esc(c.cryptoAsset || '') +
+      (c.rate ? ' · курс ' + fmtNum(c.rate, 4) : '') + '</div>' : '') +
+    '<hr>' +
+    '<div class="rrow"><span>Номер чека</span><span class="mono">' + esc(c.code) + '</span></div>' +
+    '<div class="rrow"><span>Выдан</span><span>' + fmtDate(c.issuedAt) + '</span></div>' +
+    '<div class="rrow"><span>Действителен до</span><span>' + fmtDate(c.expiresAt) + '</span></div>' +
+    '<div class="rrow"><span>Место выдачи</span><span>' + esc(c.delivery ? 'Довоз по адресу клиента' : c.pickup) + '</span></div>' +
+    (c.manager ? '<div class="rrow"><span>Менеджер</span><span>' + esc(c.manager) + '</span></div>' : '') +
+    '<div class="code">' + esc(c.code) + '</div>' +
+    '<div class="copy-row">' +
+      '<button class="btn btn-primary btn-sm" data-copy="text">Скопировать текст для клиента</button>' +
+      '<button class="btn btn-ghost btn-sm" data-copy="code">Только код</button>' +
+      '<button class="btn btn-ghost btn-sm" data-copy="link">Ссылка на проверку</button>' +
+    '</div>' +
+    '<div class="msg" id="copyMsg"></div>' +
+    '<input type="hidden" id="copyLink" value="' + esc(link) + '">' +
+  '</div>';
+}
+function clientText(c){
+  var link = CFG.siteUrl + '?check=' + encodeURIComponent(c.code);
+  var lines = [
+    '🧾 Электронный чек SwapZone',
+    '',
+    'Номер: ' + c.code,
+    'К выдаче: ' + fmtNum(c.amount, 2) + ' ' + c.currency
+  ];
+  if(c.cryptoAmount) lines.push('Принято: ' + fmtNum(c.cryptoAmount, 8) + ' ' + (c.cryptoAsset || ''));
+  if(c.rate) lines.push('Курс: ' + fmtNum(c.rate, 4));
+  lines.push('Действителен до: ' + fmtDate(c.expiresAt));
+  lines.push(c.delivery ? 'Выдача: довоз по согласованному адресу' : 'Выдача: ' + (c.pickup || CFG.office));
+  lines.push('');
+  lines.push('Проверить статус чека: ' + link);
+  return lines.join('\n');
+}
+
+var lastCheck = null;
+
+$('#createBtn').addEventListener('click', function(){
+  var btn = this, msg = $('#createMsg');
+  var amountEl = $('#amount'), ttlEl = $('#ttl');
+  amountEl.classList.remove('err'); ttlEl.classList.remove('err');
+
+  var amount = parseFloat(amountEl.value);
+  if(!(amount > 0)){ amountEl.classList.add('err'); show(msg,'bad','Укажите сумму к выдаче.'); return; }
+  var ttl = parseInt(ttlEl.value, 10);
+  if(!(ttl > 0 && ttl <= 720)){ ttlEl.classList.add('err'); show(msg,'bad','Срок действия — от 1 до 720 часов.'); return; }
+
+  var payload = {
+    amount: amount,
+    currency: $('#currency').value,
+    cryptoAsset: $('#cryptoAsset').value.trim(),
+    cryptoAmount: $('#cryptoAmount').value.trim(),
+    rate: $('#rate').value.trim(),
+    network: $('#network').value.trim(),
+    client: $('#client').value.trim(),
+    pickup: $('#pickup').value.trim(),
+    delivery: $('#delivery').checked,
+    manager: $('#manager').value.trim(),
+    note: $('#note').value.trim(),
+    ttlHours: ttl
+  };
+
+  btn.disabled = true;
+  show(msg,'info','Создаём чек…');
+  api('/api/admin/checks', { method:'POST', body: payload }).then(function(r){
+    btn.disabled = false;
+    if(r.status === 401){ openLogin('Сессия истекла, войдите заново.'); return; }
+    if(!r.ok){ show(msg,'bad', errText(r.data)); return; }
+    lastCheck = r.data.check;
+    show(msg,'ok','Чек ' + lastCheck.code + ' создан и действителен до ' + fmtDate(lastCheck.expiresAt) + '.');
+    $('#receiptBox').innerHTML = receiptHTML(lastCheck);
+    ['amount','cryptoAmount','client','note'].forEach(function(id){ $('#'+id).value = ''; });
+    loadChecks();
+  }).catch(function(){
+    btn.disabled = false;
+    show(msg,'bad','Сервер недоступен. Проверьте, запущен ли server.js.');
+  });
+});
+
+/* копирование */
+function copyText(text, okMsg){
+  var done = function(){
+    var m = $('#copyMsg');
+    if(m) show(m, 'ok', okMsg);
+    setTimeout(function(){ if(m) m.className = 'msg'; }, 2500);
+  };
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done, fallback);
+  } else { fallback(); }
+  function fallback(){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); done(); } catch(e){
+      var m = $('#copyMsg');
+      if(m) show(m,'bad','Не удалось скопировать — выделите текст вручную.');
+    }
+    document.body.removeChild(ta);
+  }
+}
+$('#receiptBox').addEventListener('click', function(e){
+  var btn = e.target.closest('[data-copy]');
+  if(!btn || !lastCheck) return;
+  var kind = btn.getAttribute('data-copy');
+  if(kind === 'code') copyText(lastCheck.code, 'Код скопирован.');
+  else if(kind === 'link') copyText(CFG.siteUrl + '?check=' + encodeURIComponent(lastCheck.code), 'Ссылка скопирована.');
+  else copyText(clientText(lastCheck), 'Текст для клиента скопирован — вставьте в Telegram.');
+});
+
+/* ================= СПИСОК ЧЕКОВ ================= */
+var STATUS_RU = { active:'Действителен', redeemed:'Погашен', expired:'Просрочен', cancelled:'Аннулирован' };
+
+function renderRows(list){
+  var tbody = $('#tbody');
+  if(!list.length){
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Чеков нет</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(function(c){
+    var acts = '';
+    if(c.status === 'active'){
+      acts = '<button class="btn btn-primary btn-sm" data-act="redeem" data-code="'+esc(c.code)+'">Выдано</button>' +
+             '<button class="btn btn-ghost btn-sm" data-act="cancel" data-code="'+esc(c.code)+'">Отменить</button>';
+    } else if(c.status === 'expired'){
+      acts = '<button class="btn btn-ghost btn-sm" data-act="extend" data-code="'+esc(c.code)+'">Продлить</button>' +
+             '<button class="btn btn-ghost btn-sm" data-act="cancel" data-code="'+esc(c.code)+'">Отменить</button>';
+    }
+    return '<tr>' +
+      '<td class="mono">' + esc(c.code) + '</td>' +
+      '<td><b>' + fmtNum(c.amount,2) + ' ' + esc(c.currency) + '</b>' +
+        (c.cryptoAmount ? '<div style="color:var(--muted);font-size:12px">' + fmtNum(c.cryptoAmount,8) + ' ' + esc(c.cryptoAsset||'') + '</div>' : '') + '</td>' +
+      '<td><span class="badge b-' + esc(c.status) + '">' + (STATUS_RU[c.status] || esc(c.status)) + '</span></td>' +
+      '<td>' + (esc(c.client) || '—') + (c.delivery ? '<div style="color:var(--muted);font-size:12px">довоз</div>' : '') + '</td>' +
+      '<td>' + fmtDate(c.issuedAt) + '</td>' +
+      '<td>' + fmtDate(c.expiresAt) +
+        (c.status === 'active' ? '<div style="color:var(--muted);font-size:12px">осталось ' + leftTime(c.expiresAt) + '</div>' : '') + '</td>' +
+      '<td><div class="acts">' + acts + '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function renderStats(stats){
+  var order = ['active','redeemed','expired','cancelled'];
+  $('#stats').innerHTML = order.map(function(k){
+    return '<span class="stat">' + STATUS_RU[k] + ': <b>' + (stats[k] || 0) + '</b></span>';
+  }).join('');
+}
+
+function loadChecks(){
+  if(!token) return;
+  var params = '?status=' + encodeURIComponent($('#filterStatus').value) +
+               '&q=' + encodeURIComponent($('#filterQuery').value.trim()) +
+               '&limit=300';
+  api('/api/admin/checks' + params).then(function(r){
+    if(r.status === 401){ openLogin('Сессия истекла, войдите заново.'); return; }
+    if(!r.ok){ $('#tbody').innerHTML = '<tr><td colspan="7" class="empty">' + esc(errText(r.data)) + '</td></tr>'; return; }
+    renderRows(r.data.checks || []);
+    renderStats(r.data.stats || {});
+  }).catch(function(){
+    $('#tbody').innerHTML = '<tr><td colspan="7" class="empty">Сервер недоступен</td></tr>';
+  });
+}
+
+$('#tbody').addEventListener('click', function(e){
+  var btn = e.target.closest('[data-act]');
+  if(!btn) return;
+  var act = btn.getAttribute('data-act'), code = btn.getAttribute('data-code');
+  var body = {};
+  if(act === 'redeem' && !confirm('Подтвердить выдачу наличных по чеку ' + code + '?')) return;
+  if(act === 'cancel' && !confirm('Аннулировать чек ' + code + '? Действие необратимо.')) return;
+  if(act === 'extend'){
+    var hours = prompt('На сколько часов продлить чек ' + code + '?', '48');
+    if(hours === null) return;
+    body.hours = Number(hours);
+    if(!(body.hours > 0)){ alert('Введите число часов больше нуля.'); return; }
+  }
+  btn.disabled = true;
+  api('/api/admin/checks/' + encodeURIComponent(code) + '/' + act, { method:'POST', body: body }).then(function(r){
+    if(r.status === 401){ openLogin('Сессия истекла, войдите заново.'); return; }
+    if(!r.ok){ alert(errText(r.data)); btn.disabled = false; return; }
+    loadChecks();
+    pingHealth();
+  }).catch(function(){
+    alert('Сервер недоступен.');
+    btn.disabled = false;
+  });
+});
+
+$('#refreshBtn').addEventListener('click', loadChecks);
+$('#filterStatus').addEventListener('change', loadChecks);
+var searchTimer = null;
+$('#filterQuery').addEventListener('input', function(){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(loadChecks, 350);
+});
+setInterval(function(){ if($('#autoRefresh').checked && token && !appView.classList.contains('hidden')) loadChecks(); }, 20000);
+
+/* ================= СТАРТ ================= */
+$('#verifyHintUrl').textContent = CFG.siteUrl + '?check=SZ-XXXXXX';
+$('#pickup').value = CFG.office;
+if(token){
+  api('/api/admin/checks?limit=1').then(function(r){
+    if(r.ok) openApp();
+    else { token = ''; openLogin(r.status === 401 ? 'Токен больше не действителен, войдите снова.' : ''); }
+  }).catch(function(){ openLogin('Сервер недоступен. Запустите server.js и обновите страницу.'); });
+} else {
+  openLogin();
+}
+})();
+</script>
+</body>
+</html>

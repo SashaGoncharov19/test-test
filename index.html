@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070a14">
+<title>SwapZone — обмен криптовалюты на наличные в Дубае</title>
+<meta name="description" content="SwapZone — обмен криптовалюты на наличные USD, EUR и AED в Дубае от 20 000 AED. Заявка в Telegram-боте, электронный чек, выдача в офисе Marina Plaza, довоз наличных на дом от 100 000 AED.">
+<meta property="og:title" content="SwapZone — крипта на наличные в Дубае">
+<meta property="og:description" content="Заявка в Telegram → перевод крипты → электронный чек → наличные в кассе. Dubai Marina, Marina Plaza, 54 этаж.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%230b0f1c'/><path d='M28 40h34l-9-9 7-7 21 21-21 21-7-7 9-9H28z' fill='%2322d3ee'/><path d='M72 60H38l9 9-7 7-21-21 21-21 7 7-9 9h34z' fill='%237c5cff' opacity='.9'/></svg>">
+<style>
+/* ============ ПЕРЕМЕННЫЕ И БАЗА ============ */
+:root{
+  --bg:#070a14; --bg-2:#0b1020;
+  --surface:rgba(255,255,255,.04); --surface-2:rgba(255,255,255,.06);
+  --line:rgba(255,255,255,.09); --line-strong:rgba(255,255,255,.16);
+  --txt:#eaf0ff; --muted:#8e9ab8;
+  --cyan:#22d3ee; --violet:#7c5cff; --green:#2ee6a8; --red:#ff5c7a; --amber:#ffb648;
+  --grad:linear-gradient(135deg,#7c5cff 0%,#22d3ee 100%);
+  --grad-soft:linear-gradient(135deg,rgba(124,92,255,.18),rgba(34,211,238,.14));
+  --radius:18px; --radius-sm:12px;
+  --shadow:0 24px 60px -24px rgba(0,0,0,.85);
+  --container:1200px; --header-h:72px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--txt);
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+body.lock{overflow:hidden}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+ul{margin:0;padding:0;list-style:none}
+h1,h2,h3,h4{margin:0;line-height:1.18;font-weight:700;letter-spacing:-.02em}
+p{margin:0}
+::selection{background:rgba(124,92,255,.45)}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#080c17}
+::-webkit-scrollbar-thumb{background:#1e2740;border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:#2b3757}
+
+.bg-fx{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
+.bg-fx::before,.bg-fx::after{content:"";position:absolute;border-radius:50%;filter:blur(120px);opacity:.5}
+.bg-fx::before{width:620px;height:620px;background:#5b32ff;top:-220px;left:-160px}
+.bg-fx::after{width:560px;height:560px;background:#0e7f97;top:320px;right:-200px}
+.grid-fx{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%);
+  -webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%);
+}
+.container{width:100%;max-width:var(--container);margin:0 auto;padding:0 20px}
+
+/* ============ КНОПКИ ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 26px;border-radius:999px;
+  border:1px solid transparent;font-weight:600;font-size:15px;cursor:pointer;white-space:nowrap;
+  transition:transform .2s ease,box-shadow .25s ease,background .25s ease,border-color .25s ease}
+.btn:active{transform:scale(.975)}
+.btn-primary{background:var(--grad);color:#0a0d18;box-shadow:0 12px 34px -12px rgba(124,92,255,.9)}
+.btn-primary:hover{box-shadow:0 18px 44px -12px rgba(34,211,238,.85);transform:translateY(-2px)}
+.btn-ghost{background:var(--surface);border-color:var(--line);color:var(--txt);backdrop-filter:blur(10px)}
+.btn-ghost:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.btn-tg{background:#229ed9;color:#fff;box-shadow:0 12px 30px -12px rgba(34,158,217,.9)}
+.btn-tg:hover{background:#1b8ec5;transform:translateY(-2px)}
+.btn-lg{padding:17px 34px;font-size:16px}
+.btn-block{width:100%}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.chip .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(46,230,168,.18);animation:pulse 2s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(46,230,168,0)}}
+
+/* ============ ХЕДЕР ============ */
+.header{position:sticky;top:0;z-index:60;height:var(--header-h);display:flex;align-items:center;
+  background:rgba(7,10,20,.72);backdrop-filter:blur(16px);border-bottom:1px solid transparent;transition:border-color .3s,background .3s}
+.header.scrolled{border-bottom-color:var(--line);background:rgba(7,10,20,.92)}
+.header .container{display:flex;align-items:center;gap:24px}
+.logo{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;letter-spacing:-.03em;flex-shrink:0}
+.logo-mark{width:38px;height:38px;border-radius:11px;background:var(--grad);display:grid;place-items:center;
+  color:#080b14;font-size:19px;font-weight:900;box-shadow:0 8px 22px -8px rgba(124,92,255,.9)}
+.logo span.accent{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav{display:flex;align-items:center;gap:2px;margin-left:auto}
+.nav a{padding:9px 12px;border-radius:10px;font-size:14.5px;color:var(--muted);transition:color .2s,background .2s}
+.nav a:hover{color:var(--txt);background:var(--surface)}
+.header-cta{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.burger{display:none;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);
+  background:var(--surface);cursor:pointer;position:relative;flex-shrink:0}
+.burger i{position:absolute;left:12px;width:20px;height:2px;background:var(--txt);border-radius:2px;transition:.28s}
+.burger i:nth-child(1){top:15px}.burger i:nth-child(2){top:21px}.burger i:nth-child(3){top:27px}
+.burger.open i:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger.open i:nth-child(2){opacity:0}
+.burger.open i:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+.mobile-menu{position:fixed;inset:var(--header-h) 0 0;z-index:55;background:rgba(7,10,20,.985);
+  backdrop-filter:blur(20px);padding:26px 20px 40px;overflow-y:auto;transform:translateX(100%);
+  transition:transform .32s cubic-bezier(.4,0,.2,1)}
+.mobile-menu.open{transform:translateX(0)}
+.mobile-menu a.m-link{display:flex;align-items:center;justify-content:space-between;padding:16px 4px;
+  border-bottom:1px solid var(--line);font-size:17px;font-weight:500}
+.mobile-menu a.m-link::after{content:"→";color:var(--muted)}
+.mobile-menu .m-actions{margin-top:26px;display:grid;gap:12px}
+
+/* ============ СЕКЦИИ ============ */
+section{position:relative;padding:90px 0}
+.sec-head{max-width:740px;margin:0 auto 52px;text-align:center}
+.sec-tag{display:inline-block;padding:6px 14px;border-radius:999px;font-size:12.5px;letter-spacing:.14em;
+  text-transform:uppercase;font-weight:600;color:var(--cyan);background:rgba(34,211,238,.09);
+  border:1px solid rgba(34,211,238,.24);margin-bottom:16px}
+.sec-head h2{font-size:clamp(27px,4.2vw,42px);margin-bottom:14px}
+.sec-head p{color:var(--muted);font-size:17px}
+.gr-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ============ HERO ============ */
+.hero{padding:64px 0 80px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center}
+.hero h1{font-size:clamp(31px,5vw,54px);margin:20px 0 18px;letter-spacing:-.035em}
+.hero .lead{color:var(--muted);font-size:18px;max-width:560px;margin-bottom:30px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:560px}
+.hero-stats .st{padding:16px 18px;border-radius:var(--radius-sm);background:var(--surface);border:1px solid var(--line)}
+.hero-stats .st b{display:block;font-size:23px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-stats .st span{font-size:12.5px;color:var(--muted)}
+
+/* ============ КАЛЬКУЛЯТОР ============ */
+.exchange-card{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));
+  border:1px solid var(--line-strong);border-radius:24px;padding:24px;box-shadow:var(--shadow);
+  backdrop-filter:blur(14px);position:relative}
+.exchange-card::before{content:"";position:absolute;inset:-1px;border-radius:25px;padding:1px;
+  background:linear-gradient(135deg,rgba(124,92,255,.6),transparent 40%,transparent 60%,rgba(34,211,238,.5));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.ex-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.ex-head h3{font-size:19px}
+.ex-row{background:rgba(0,0,0,.32);border:1px solid var(--line);border-radius:16px;padding:14px 16px;
+  transition:border-color .2s,box-shadow .2s}
+.ex-row:focus-within{border-color:rgba(124,92,255,.6);box-shadow:0 0 0 4px rgba(124,92,255,.12)}
+.ex-row .lbl{font-size:12.5px;color:var(--muted);margin-bottom:8px;display:flex;justify-content:space-between;gap:10px}
+.ex-row .lbl .mini{color:var(--cyan);cursor:pointer}
+.ex-line{display:flex;align-items:center;gap:12px}
+.ex-line input{flex:1;min-width:0;background:none;border:none;outline:none;font-size:25px;font-weight:700;letter-spacing:-.02em;padding:0}
+.ex-line input::-webkit-outer-spin-button,.ex-line input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.ex-line input[type=number]{-moz-appearance:textfield}
+.cur-select{position:relative;flex-shrink:0}
+.cur-btn{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:12px;background:var(--surface-2);
+  border:1px solid var(--line);cursor:pointer;font-weight:600;font-size:14px;transition:border-color .2s,background .2s}
+.cur-btn:hover{border-color:var(--line-strong);background:rgba(255,255,255,.1)}
+.cur-btn .caret{color:var(--muted);font-size:11px;transition:transform .2s}
+.cur-btn.open .caret{transform:rotate(180deg)}
+.cico{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#0a0d18;flex-shrink:0}
+.cur-list{position:absolute;top:calc(100% + 8px);right:0;width:290px;max-height:290px;overflow-y:auto;z-index:30;
+  background:#0d1223;border:1px solid var(--line-strong);border-radius:16px;padding:8px;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.9);display:none}
+.cur-list.open{display:block;animation:pop .18s ease}
+@keyframes pop{from{opacity:0;transform:translateY(-6px)}}
+.cur-search{width:100%;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.05);
+  border:1px solid var(--line);outline:none;margin-bottom:8px;font-size:14px}
+.cur-search::placeholder{color:var(--muted)}
+.cur-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:11px;cursor:pointer;transition:background .15s}
+.cur-item:hover{background:rgba(124,92,255,.16)}
+.cur-item .nm{font-size:14px;font-weight:600}
+.cur-item .sub{font-size:11.5px;color:var(--muted)}
+.cur-group{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:10px 10px 6px}
+.arrow-down{margin:-8px auto;position:relative;z-index:5;display:grid;place-items:center;width:40px;height:40px;
+  border-radius:13px;background:var(--grad);color:#0a0d18;border:4px solid #0d1220;font-size:16px;font-weight:900}
+.ex-info{margin-top:16px;display:grid;gap:9px;font-size:13.5px}
+.ex-info .r{display:flex;justify-content:space-between;gap:12px;color:var(--muted)}
+.ex-info .r b{color:var(--txt);font-weight:600;text-align:right}
+.ex-note{margin-top:14px;font-size:12px;color:var(--muted);text-align:center;line-height:1.5}
+.ex-fields{display:grid;gap:12px;margin-top:16px}
+.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;padding:13px 15px;border-radius:12px;background:rgba(0,0,0,.32);
+  border:1px solid var(--line);outline:none;font-size:14.5px;transition:border-color .2s,box-shadow .2s}
+.field select{appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,#8e9ab8 50%),linear-gradient(135deg,#8e9ab8 50%,transparent 50%);
+  background-position:calc(100% - 20px) 22px,calc(100% - 15px) 22px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.field select option{background:#0d1223}
+.field input::placeholder{color:#5c6787}
+.field input:focus,.field select:focus{border-color:rgba(34,211,238,.55);box-shadow:0 0 0 4px rgba(34,211,238,.1)}
+.field input.err{border-color:var(--red)}
+.agree-note{font-size:12px;color:var(--muted);line-height:1.55;text-align:center}
+.agree-note a{color:var(--cyan);text-decoration:underline;text-underline-offset:2px}
+.form-msg{display:none;margin-top:12px;padding:12px 14px;border-radius:12px;font-size:13.5px}
+.form-msg.ok{display:block;background:rgba(46,230,168,.1);border:1px solid rgba(46,230,168,.3);color:var(--green)}
+.form-msg.bad{display:block;background:rgba(255,92,122,.1);border:1px solid rgba(255,92,122,.3);color:var(--red)}
+
+/* ============ ТИКЕР ============ */
+.ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(255,255,255,.02);overflow:hidden;padding:14px 0}
+.ticker-track{display:flex;gap:36px;width:max-content;animation:scroll-x 38s linear infinite}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes scroll-x{to{transform:translateX(-50%)}}
+.tk{display:flex;align-items:center;gap:10px;font-size:14px;white-space:nowrap}
+.tk .p{font-weight:600}
+.tk .up{color:var(--green);font-size:12.5px}
+.tk .down{color:var(--red);font-size:12.5px}
+
+/* ============ КАРТОЧКИ ============ */
+.cards{display:grid;gap:20px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px;
+  transition:transform .28s ease,border-color .28s,background .28s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-5px);border-color:rgba(124,92,255,.42);background:var(--surface-2)}
+.card .ic{width:50px;height:50px;border-radius:14px;display:grid;place-items:center;font-size:22px;
+  background:var(--grad-soft);border:1px solid var(--line);margin-bottom:16px}
+.card h3{font-size:18px;margin-bottom:9px}
+.card p{color:var(--muted);font-size:14.5px}
+
+/* ============ ТАЙМЛАЙН ШАГОВ ============ */
+.timeline{max-width:900px;margin:0 auto;position:relative;display:grid;gap:18px;padding-left:80px}
+.timeline::before{content:"";position:absolute;left:27px;top:28px;bottom:28px;width:2px;border-radius:2px;
+  background:linear-gradient(180deg,rgba(124,92,255,.75),rgba(34,211,238,.45) 55%,rgba(34,211,238,.08));
+  pointer-events:none}
+.tstep{position:relative;padding:22px 24px;border-radius:var(--radius);
+  background:var(--surface);border:1px solid var(--line);transition:border-color .28s,background .28s}
+.tstep:hover{border-color:rgba(124,92,255,.42);background:var(--surface-2)}
+.tstep .num{position:absolute;left:-80px;top:20px;width:56px;height:56px;border-radius:16px;
+  display:grid;place-items:center;font-weight:800;font-size:20px;background:var(--grad);color:#0a0d18;
+  box-shadow:0 0 0 6px var(--bg),0 10px 26px -12px rgba(124,92,255,.9)}
+.tstep h3{font-size:17.5px;margin-bottom:7px}
+.tstep p{color:var(--muted);font-size:14.5px}
+.tstep .tag{display:inline-block;margin-top:10px;font-size:12px;padding:5px 11px;border-radius:999px;
+  background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);color:var(--cyan)}
+
+/* ============ ЧЕК ============ */
+.check-wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.receipt{background:linear-gradient(180deg,#101627,#0b1020);border:1px solid var(--line-strong);border-radius:20px;
+  padding:26px;position:relative;box-shadow:var(--shadow);max-width:420px;margin:0 auto;width:100%}
+.receipt::before,.receipt::after{content:"";position:absolute;width:26px;height:26px;border-radius:50%;background:var(--bg);top:calc(50% - 13px)}
+.receipt::before{left:-14px}
+.receipt::after{right:-14px}
+.receipt .rh{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.receipt .rh .b{display:flex;align-items:center;gap:9px;font-weight:800}
+.receipt .st-ok{font-size:12px;padding:5px 11px;border-radius:999px;background:rgba(46,230,168,.12);
+  border:1px solid rgba(46,230,168,.3);color:var(--green)}
+.receipt .amount{font-size:34px;font-weight:800;letter-spacing:-.03em;margin:4px 0}
+.receipt .sub{font-size:13px;color:var(--muted)}
+.receipt .dash{border:none;border-top:1px dashed var(--line-strong);margin:20px 0}
+.receipt .rrow{display:flex;justify-content:space-between;gap:14px;font-size:13.5px;padding:6px 0}
+.receipt .rrow span:first-child{color:var(--muted)}
+.receipt .rrow span:last-child{font-weight:600;text-align:right}
+.receipt .code{margin-top:18px;padding:14px;border-radius:12px;background:rgba(0,0,0,.4);border:1px dashed var(--line-strong);
+  text-align:center;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;letter-spacing:.22em;font-weight:700}
+.check-list{display:grid;gap:14px;margin:22px 0 26px}
+.check-list li{display:flex;gap:12px;align-items:flex-start;color:#c9d1e6;font-size:15px}
+.check-list li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0}
+.verify{margin-top:20px;padding:20px;border-radius:var(--radius);background:rgba(0,0,0,.3);border:1px solid var(--line)}
+.verify .vrow{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.verify input{flex:1;min-width:180px;padding:13px 15px;border-radius:12px;background:rgba(0,0,0,.35);
+  border:1px solid var(--line);outline:none;font-size:14.5px;letter-spacing:.08em}
+.verify input:focus{border-color:rgba(34,211,238,.55)}
+.verify-out{display:none;margin-top:12px;font-size:13.5px;padding:12px 14px;border-radius:12px}
+.verify-out.ok{display:block;background:rgba(46,230,168,.1);border:1px solid rgba(46,230,168,.3);color:var(--green)}
+.verify-out.bad{display:block;background:rgba(255,92,122,.1);border:1px solid rgba(255,92,122,.3);color:var(--red)}
+
+/* ============ ОФИС ============ */
+.office{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;align-items:stretch;
+  padding:34px;border-radius:26px;background:var(--grad-soft);border:1px solid var(--line-strong)}
+.office .o-rows{display:grid;gap:14px;margin:20px 0 26px}
+.o-row{display:flex;gap:14px;align-items:flex-start}
+.o-row .ic{width:42px;height:42px;flex-shrink:0;border-radius:12px;background:rgba(0,0,0,.35);
+  border:1px solid var(--line);display:grid;place-items:center;font-size:18px}
+.o-row .t{font-size:12.5px;color:var(--muted)}
+.o-row .v{font-size:15.5px;font-weight:600}
+.map-box{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);min-height:300px;
+  background:rgba(0,0,0,.35);position:relative;display:grid;place-items:center;text-align:center;padding:26px}
+.map-box .pin{font-size:44px;margin-bottom:12px}
+.map-box .mtitle{font-size:19px;font-weight:700;margin-bottom:6px}
+.map-box .maddr{color:var(--muted);font-size:14px;margin-bottom:18px;max-width:280px}
+.map-grid{position:absolute;inset:0;z-index:0;opacity:.35;
+  background-image:linear-gradient(rgba(124,92,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.14) 1px,transparent 1px);
+  background-size:38px 38px}
+.map-box>*{position:relative;z-index:1}
+
+/* ============ ТАБЛИЦА КУРСОВ ============ */
+.rates-wrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface)}
+.rates-top{display:flex;gap:10px;padding:16px;border-bottom:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.tabs{display:flex;gap:6px;background:rgba(0,0,0,.3);padding:5px;border-radius:12px;flex-wrap:wrap}
+.tab{padding:8px 15px;border-radius:9px;font-size:13.5px;cursor:pointer;color:var(--muted);border:none;background:none;transition:.2s}
+.tab.active{background:var(--grad);color:#0a0d18;font-weight:600}
+.rates-search{margin-left:auto;position:relative}
+.rates-search input{padding:10px 14px 10px 36px;border-radius:11px;background:rgba(0,0,0,.3);
+  border:1px solid var(--line);outline:none;font-size:14px;width:230px}
+.rates-search input:focus{border-color:rgba(34,211,238,.5)}
+.rates-search::before{content:"⌕";position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:17px}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:660px}
+th{text-align:left;padding:14px 18px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;background:rgba(0,0,0,.24);white-space:nowrap}
+td{padding:15px 18px;border-top:1px solid var(--line);font-size:14.5px;white-space:nowrap}
+tbody tr{transition:background .2s}
+tbody tr:hover{background:rgba(124,92,255,.07)}
+.pair{display:flex;align-items:center;gap:10px;font-weight:600}
+.mini-btn{padding:8px 15px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line);
+  font-size:13px;cursor:pointer;transition:.2s;font-weight:500}
+.mini-btn:hover{background:var(--grad);color:#0a0d18;border-color:transparent}
+.up{color:var(--green)}.down{color:var(--red)}
+
+/* ============ КАССА / ЛИМИТЫ ============ */
+.reserve{display:flex;align-items:center;gap:14px;padding:18px;border-radius:var(--radius-sm);
+  background:var(--surface);border:1px solid var(--line);transition:.25s}
+.reserve:hover{border-color:rgba(34,211,238,.4);transform:translateY(-3px)}
+.reserve .cico{width:40px;height:40px;font-size:14px}
+.reserve .nm{font-size:13.5px;color:var(--muted)}
+.reserve .val{font-size:17px;font-weight:700}
+.bar{height:4px;border-radius:4px;background:rgba(255,255,255,.08);margin-top:7px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--grad);border-radius:4px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+
+/* ============ ОТЗЫВЫ ============ */
+.review{padding:24px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--line);
+  display:flex;flex-direction:column;gap:14px}
+.review .stars{color:var(--amber);letter-spacing:2px;font-size:14px}
+.review p{color:#c3cbe2;font-size:14.5px;flex:1}
+.review .who{display:flex;align-items:center;gap:12px}
+.review .av{width:42px;height:42px;border-radius:50%;background:var(--grad);display:grid;place-items:center;
+  font-weight:800;color:#0a0d18;flex-shrink:0}
+.review .who .n{font-size:14.5px;font-weight:600}
+.review .who .d{font-size:12.5px;color:var(--muted)}
+
+/* ============ FAQ ============ */
+.faq{max-width:840px;margin:0 auto;display:grid;gap:12px}
+.qa{border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);overflow:hidden;transition:border-color .25s}
+.qa.open{border-color:rgba(124,92,255,.45)}
+.qa .q{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;
+  padding:20px 22px;background:none;border:none;cursor:pointer;font-size:16px;font-weight:600}
+.qa .q .pl{width:26px;height:26px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;
+  flex-shrink:0;transition:.28s;font-size:16px;line-height:1}
+.qa.open .q .pl{background:var(--grad);color:#0a0d18;transform:rotate(45deg)}
+.qa .a{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.qa .a p{padding:0 22px 20px;color:var(--muted);font-size:14.5px}
+
+/* ============ ПАРТНЁРЫ ============ */
+.partner{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;padding:44px;
+  border-radius:26px;background:var(--grad-soft);border:1px solid var(--line-strong)}
+.partner ul{display:grid;gap:14px;margin:22px 0 28px}
+.partner li{display:flex;gap:12px;align-items:flex-start;color:#c9d1e6;font-size:15px}
+.partner li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0}
+.pcalc{background:rgba(0,0,0,.36);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+.pcalc .out{font-size:34px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin:8px 0 4px}
+input[type=range]{width:100%;accent-color:#7c5cff;margin:12px 0}
+
+/* ============ КОНТАКТЫ / CTA ============ */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.contact-item{display:flex;gap:16px;align-items:flex-start;padding:20px;border-radius:var(--radius-sm);
+  background:var(--surface);border:1px solid var(--line)}
+.contact-item .ic{width:44px;height:44px;border-radius:12px;background:var(--grad-soft);display:grid;
+  place-items:center;font-size:19px;flex-shrink:0;border:1px solid var(--line)}
+.contact-item .t{font-size:13px;color:var(--muted)}
+.contact-item .v{font-size:15.5px;font-weight:600;word-break:break-word}
+.cta{text-align:center;padding:56px 40px;border-radius:28px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(34,211,238,.16));border:1px solid var(--line-strong)}
+.cta h2{font-size:clamp(25px,3.6vw,38px);margin-bottom:14px}
+.cta p{color:#c3cbe2;max-width:580px;margin:0 auto 28px}
+
+/* ============ ЛЕГАЛЬНЫЙ БЛОК ============ */
+.legal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.legal-card{padding:24px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--line)}
+.legal-card h3{font-size:16.5px;margin-bottom:10px;display:flex;gap:10px;align-items:center}
+.legal-card p{font-size:13.5px;color:var(--muted)}
+.legal-card .lk{margin-top:14px;display:inline-flex;gap:6px;align-items:center;color:var(--cyan);
+  font-size:13.5px;cursor:pointer;border-bottom:1px dashed rgba(34,211,238,.5)}
+.company-box{margin-top:26px;padding:26px;border-radius:var(--radius);background:rgba(0,0,0,.28);
+  border:1px solid var(--line);display:grid;grid-template-columns:repeat(2,1fr);gap:14px 32px;font-size:13.5px}
+.company-box .row{display:flex;justify-content:space-between;gap:16px;border-bottom:1px dashed var(--line);padding-bottom:10px}
+.company-box .row span:first-child{color:var(--muted)}
+.company-box .row span:last-child{text-align:right;font-weight:500}
+.disclaimer{margin-top:22px;padding:18px 20px;border-radius:var(--radius-sm);background:rgba(255,182,72,.07);
+  border:1px solid rgba(255,182,72,.28);color:#e3d3b4;font-size:13px;line-height:1.65}
+
+/* ============ ФУТЕР ============ */
+footer{border-top:1px solid var(--line);padding:56px 0 30px;background:rgba(0,0,0,.35)}
+.f-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px;margin-bottom:36px}
+.f-col h4{font-size:14px;margin-bottom:16px;letter-spacing:.04em}
+.f-col a,.f-col li{display:block;color:var(--muted);font-size:14px;padding:5px 0;transition:color .2s;cursor:pointer}
+.f-col a:hover{color:var(--cyan)}
+.f-about p{color:var(--muted);font-size:14px;margin:14px 0 18px;max-width:340px}
+.socials{display:flex;gap:10px}
+.socials a{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--surface);
+  border:1px solid var(--line);font-size:16px;transition:.25s}
+.socials a:hover{background:var(--grad);color:#0a0d18;transform:translateY(-3px);border-color:transparent}
+.f-bottom{border-top:1px solid var(--line);padding-top:22px;display:flex;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.pay-icons{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pay-icons span{padding:6px 11px;border-radius:8px;background:var(--surface);border:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+
+/* ============ МОДАЛКА / COOKIE / КНОПКИ ============ */
+.modal{position:fixed;inset:0;z-index:100;display:none;padding:20px;align-items:center;justify-content:center}
+.modal.open{display:flex}
+.modal-bg{position:absolute;inset:0;background:rgba(3,5,12,.82);backdrop-filter:blur(8px)}
+.modal-box{position:relative;width:100%;max-width:760px;max-height:86vh;overflow-y:auto;background:#0c1122;
+  border:1px solid var(--line-strong);border-radius:22px;padding:32px;box-shadow:0 40px 90px -30px rgba(0,0,0,.9);
+  animation:mup .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes mup{from{opacity:0;transform:translateY(24px)}}
+.modal-box h3{font-size:23px;margin-bottom:6px}
+.modal-box .upd{font-size:12.5px;color:var(--muted);margin-bottom:20px}
+.modal-box h4{font-size:15.5px;margin:20px 0 8px;color:var(--cyan)}
+.modal-box p,.modal-box li{font-size:14px;color:#b9c2da;line-height:1.7}
+.modal-box ul{list-style:disc;padding-left:20px;margin:8px 0;display:grid;gap:6px}
+.modal-close{position:absolute;top:16px;right:16px;width:38px;height:38px;border-radius:11px;
+  background:var(--surface-2);border:1px solid var(--line);cursor:pointer;font-size:17px;line-height:1}
+.modal-close:hover{background:rgba(255,92,122,.2);border-color:rgba(255,92,122,.4)}
+.cookie{position:fixed;left:20px;right:20px;bottom:20px;z-index:90;max-width:560px;margin:0 auto;background:#0c1122;
+  border:1px solid var(--line-strong);border-radius:18px;padding:20px;display:flex;gap:16px;align-items:center;
+  box-shadow:var(--shadow);transform:translateY(200%);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.cookie.show{transform:translateY(0)}
+.cookie p{font-size:13px;color:var(--muted);flex:1}
+.cookie a{color:var(--cyan);text-decoration:underline}
+.to-top{position:fixed;right:20px;bottom:20px;z-index:80;width:48px;height:48px;border-radius:15px;
+  background:var(--grad);color:#0a0d18;border:none;cursor:pointer;font-size:19px;font-weight:800;opacity:0;
+  pointer-events:none;transition:.3s;box-shadow:0 14px 34px -12px rgba(124,92,255,.9)}
+.to-top.show{opacity:1;pointer-events:auto}
+.to-top:hover{transform:translateY(-4px)}
+.tg-float{position:fixed;left:20px;bottom:20px;z-index:80;display:flex;align-items:center;gap:10px;padding:12px 20px;
+  border-radius:999px;background:#229ed9;color:#fff;font-weight:600;font-size:14px;
+  box-shadow:0 16px 40px -14px rgba(34,158,217,.95);transition:.25s}
+.tg-float:hover{transform:translateY(-3px)}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ============ АДАПТИВ ============ */
+@media (max-width:1080px){
+  .nav a{padding:9px 9px;font-size:13.5px}
+  .g4{grid-template-columns:repeat(2,1fr)}
+  .legal-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:980px){
+  .nav,.header-cta .btn{display:none}
+  .burger{display:block;margin-left:auto}
+  .hero-grid,.check-wrap,.office{grid-template-columns:1fr;gap:34px}
+  .office{padding:28px 22px}
+  .hero .lead{max-width:none}
+  .partner{grid-template-columns:1fr;padding:32px 24px}
+  .f-grid{grid-template-columns:1fr 1fr;gap:28px}
+  section{padding:70px 0}
+}
+@media (max-width:760px){
+  :root{--header-h:64px}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .contact-grid,.legal-grid{grid-template-columns:1fr}
+  .company-box{grid-template-columns:1fr;padding:20px}
+  .rates-search{margin-left:0;width:100%}
+  .rates-search input{width:100%}
+  .tabs{width:100%}
+  .tab{flex:1;text-align:center}
+  .sec-head{margin-bottom:36px}
+  .cta{padding:40px 22px}
+  .hero-stats{grid-template-columns:1fr;max-width:none}
+  .hero-stats .st{display:flex;align-items:baseline;gap:10px}
+  .hero-stats .st b{font-size:20px}
+  .timeline{padding-left:60px}
+  .timeline::before{left:21px;top:22px;bottom:22px}
+  .tstep{padding:18px}
+  .tstep .num{width:44px;height:44px;font-size:17px;left:-60px;top:16px;border-radius:13px;box-shadow:0 0 0 5px var(--bg)}
+  .cookie{flex-direction:column;align-items:stretch;text-align:center;left:12px;right:12px;bottom:12px}
+  .tg-float span{display:none}
+  .tg-float{padding:14px;border-radius:50%;left:16px;bottom:16px}
+  .to-top{right:16px;bottom:16px}
+  .modal-box{padding:24px 20px;max-height:90vh}
+  .f-bottom{flex-direction:column;text-align:center}
+}
+@media (max-width:520px){
+  .container{padding:0 16px}
+  .exchange-card{padding:18px}
+  .ex-line input{font-size:21px}
+  .cur-list{width:min(88vw,290px)}
+  .hero-actions .btn{width:100%}
+  .card{padding:20px}
+  section{padding:56px 0}
+  .f-grid{grid-template-columns:1fr}
+  .receipt .amount{font-size:28px}
+  .receipt .code{font-size:16px;letter-spacing:.16em}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+<div class="grid-fx"></div>
+
+<!-- ================= ХЕДЕР ================= -->
+<header class="header" id="header">
+  <div class="container">
+    <a href="#top" class="logo"><div class="logo-mark">S</div><div>Swap<span class="accent">Zone</span></div></a>
+    <nav class="nav">
+      <a href="#calc">Расчёт</a>
+      <a href="#how">Как это работает</a>
+      <a href="#check">Электронный чек</a>
+      <a href="#office">Офис</a>
+      <a href="#delivery">Довоз</a>
+      <a href="#rates">Курсы</a>
+      <a href="#cash">Касса</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contacts">Контакты</a>
+    </nav>
+    <div class="header-cta">
+      <a class="btn btn-tg" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ Telegram-бот</a>
+      <button class="burger" id="burger" aria-label="Меню"><i></i><i></i><i></i></button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a class="m-link" href="#calc">Расчёт суммы</a>
+  <a class="m-link" href="#how">Как это работает</a>
+  <a class="m-link" href="#check">Электронный чек</a>
+  <a class="m-link" href="#office">Офис в Дубае</a>
+  <a class="m-link" href="#delivery">Довоз наличных</a>
+  <a class="m-link" href="#advantages">Преимущества</a>
+  <a class="m-link" href="#rates">Курсы</a>
+  <a class="m-link" href="#cash">Касса и лимиты</a>
+  <a class="m-link" href="#reviews">Отзывы</a>
+  <a class="m-link" href="#faq">FAQ</a>
+  <a class="m-link" href="#partners">Партнёрам</a>
+  <a class="m-link" href="#legal">Документы</a>
+  <a class="m-link" href="#contacts">Контакты</a>
+  <div class="m-actions">
+    <a class="btn btn-tg btn-block" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ Написать в Telegram-бот</a>
+    <a class="btn btn-ghost btn-block" href="#calc">Рассчитать сумму</a>
+  </div>
+</div>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="exchange">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-left reveal">
+        <span class="chip"><span class="dot"></span> Dubai Marina · обмен от 20 000 AED · ежедневно 10:00–21:00</span>
+        <h1>Криптовалюта в <span class="gr-text">наличные USD, EUR и дирхамы</span> в Дубае</h1>
+        <p class="lead">Оставляете заявку в Telegram-боте — менеджер связывается с вами и фиксирует курс. Вы переводите криптовалюту, получаете электронный чек и забираете наличные в офисе в Dubai Marina. От 100 000 AED привозим деньги по вашему адресу.</p>
+        <div class="hero-actions">
+          <a class="btn btn-tg btn-lg" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ Оставить заявку в боте</a>
+          <a class="btn btn-ghost btn-lg" href="#calc">Рассчитать сумму</a>
+        </div>
+        <div class="hero-stats">
+          <div class="st"><b data-count="20000">0</b><span>AED — минимальная сумма обмена</span></div>
+          <div class="st"><b data-count="100000">0</b><span>AED — от этой суммы довозим деньги на дом</span></div>
+          <div class="st"><b data-count="3">0</b><span>валюты наличными: USD, EUR, AED</span></div>
+        </div>
+      </div>
+
+      <div class="reveal" id="calc">
+        <div class="exchange-card">
+          <div class="ex-head">
+            <h3>Расчёт суммы к выдаче</h3>
+            <span class="chip"><span class="dot"></span> Курс обновлён <span id="rateTime">только что</span></span>
+          </div>
+
+          <div class="ex-row">
+            <div class="lbl"><span>Вы переводите криптовалюту</span><span class="mini" id="setMin">Мин. сумма</span></div>
+            <div class="ex-line">
+              <input type="number" id="giveAmount" value="0.05" min="0" step="any" inputmode="decimal" aria-label="Сумма криптовалюты">
+              <div class="cur-select">
+                <button class="cur-btn" id="giveBtn" type="button">
+                  <span class="cico" id="giveIco">₿</span><span id="giveCode">BTC</span><span class="caret">▼</span>
+                </button>
+                <div class="cur-list" id="giveList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="arrow-down" aria-hidden="true">↓</div>
+
+          <div class="ex-row">
+            <div class="lbl"><span>Получаете наличными в кассе</span><span id="cashInfo">В кассе: —</span></div>
+            <div class="ex-line">
+              <input type="number" id="getAmount" value="0" min="0" step="any" inputmode="decimal" aria-label="Сумма наличных">
+              <div class="cur-select">
+                <button class="cur-btn" id="getBtn" type="button">
+                  <span class="cico" id="getIco">$</span><span id="getCode">USD</span><span class="caret">▼</span>
+                </button>
+                <div class="cur-list" id="getList"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ex-info">
+            <div class="r"><span>Курс обмена</span><b id="rateLine">—</b></div>
+            <div class="r"><span>Комиссия сервиса</span><b id="feeLine">—</b></div>
+            <div class="r"><span>Минимальная сумма</span><b>от 20 000 AED</b></div>
+            <div class="r"><span>Выдача наличных</span><b>Marina Plaza, офис 2902</b></div>
+            <div class="r"><span>Довоз на дом</span><b>от 100 000 AED — бесплатно</b></div>
+            <div class="r"><span>Срок действия чека</span><b>48 часов</b></div>
+          </div>
+
+          <div class="ex-fields">
+            <a class="btn btn-tg btn-block btn-lg" id="toBotBtn" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ Продолжить в Telegram-боте</a>
+            <div class="form-msg" id="formMsg"></div>
+            <p class="agree-note">Нажимая кнопку, вы подтверждаете, что вам есть 18 лет и средства получены законным путём, а также соглашаетесь с
+              <a href="#" data-modal="terms">Правилами обслуживания</a>,
+              <a href="#" data-modal="aml">AML/KYC-политикой</a> и
+              <a href="#" data-modal="privacy">Политикой конфиденциальности</a>.</p>
+          </div>
+
+          <p class="ex-note">Расчёт носит предварительный характер. Финальный курс фиксирует менеджер в Telegram и указывает в электронном чеке.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ТИКЕР ================= -->
+<div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker"></div></div>
+
+<!-- ================= КАК ЭТО РАБОТАЕТ ================= -->
+<section id="how">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Процесс</span>
+      <h2>Как проходит обмен</h2>
+      <p>Пять шагов: от сообщения боту до наличных на руках. Обычно весь путь занимает менее часа.</p>
+    </div>
+    <div class="timeline">
+      <div class="tstep reveal"><div class="num">1</div><div>
+        <h3>Пишете в Telegram-бот</h3>
+        <p>Открываете @SwapZoneBot, указываете монету, сумму и валюту, которую хотите получить наличными: доллары, евро или дирхамы.</p>
+        <span class="tag">1–2 минуты</span></div></div>
+      <div class="tstep reveal"><div class="num">2</div><div>
+        <h3>С вами связывается менеджер</h3>
+        <p>Живой сотрудник подтверждает сумму, фиксирует курс и отправляет адрес кошелька для перевода. Все вопросы можно задать прямо в чате.</p>
+        <span class="tag">до 5 минут</span></div></div>
+      <div class="tstep reveal"><div class="num">3</div><div>
+        <h3>Переводите криптовалюту</h3>
+        <p>Отправляете монеты на выданный адрес. Менеджер отслеживает подтверждения сети и сообщает о зачислении.</p>
+        <span class="tag">5–20 минут в зависимости от сети</span></div></div>
+      <div class="tstep reveal"><div class="num">4</div><div>
+        <h3>Получаете электронный чек</h3>
+        <p>После зачисления бот присылает электронный чек с уникальным кодом, суммой к выдаче, валютой и сроком действия. Чек — ваше подтверждение права на получение наличных.</p>
+        <span class="tag">мгновенно</span></div></div>
+      <div class="tstep reveal"><div class="num">5</div><div>
+        <h3>Забираете наличные в офисе</h3>
+        <p>Приезжаете в Marina Plaza, поднимаетесь на 54 этаж в офис 2902, показываете чек кассиру — и получаете деньги на руки. Пересчитать сумму можно на месте. При сумме от 100 000 AED деньги привезём по вашему адресу в Дубае.</p>
+        <span class="tag">выдача за 5–10 минут · довоз от 100 000 AED</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ЭЛЕКТРОННЫЙ ЧЕК ================= -->
+<section id="check">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Гарантия</span>
+      <h2>Что такое <span class="gr-text">электронный чек</span></h2>
+      <p>Это цифровой документ в Telegram, который подтверждает: криптовалюта получена, сумма зафиксирована, деньги ждут вас в кассе.</p>
+    </div>
+    <div class="check-wrap">
+      <div class="reveal">
+        <div class="receipt">
+          <div class="rh">
+            <div class="b"><span class="cico" style="background:linear-gradient(135deg,#7c5cff,#22d3ee)">S</span> SwapZone</div>
+            <span class="st-ok">● Образец чека</span>
+          </div>
+          <div class="sub">К выдаче наличными</div>
+          <div class="amount">4 820,00 USD</div>
+          <div class="sub">за 0,05 BTC · курс 96 400 $</div>
+          <hr class="dash">
+          <div class="rrow"><span>Номер чека</span><span>SZ-482913</span></div>
+          <div class="rrow"><span>Дата и время</span><span>09.08.2026, 14:22 GST</span></div>
+          <div class="rrow"><span>Пункт выдачи</span><span>Marina Plaza, оф. 2902</span></div>
+          <div class="rrow"><span>Действителен до</span><span>11.08.2026, 14:22</span></div>
+          <div class="rrow"><span>Менеджер</span><span>@SwapZoneManager</span></div>
+          <div class="code">SZ-482913</div>
+        </div>
+      </div>
+      <div class="reveal">
+        <h3 style="font-size:clamp(21px,3vw,28px);margin-bottom:14px">Чек защищает обе стороны сделки</h3>
+        <ul class="check-list">
+          <li>Сумма и курс зафиксированы — при скачке рынка вы получите ровно то, что указано в чеке</li>
+          <li>Уникальный код и QR привязаны к вашей заявке: получить деньги по чужому чеку невозможно</li>
+          <li>Чек действует 48 часов — приезжайте в удобное время в рабочие часы офиса</li>
+          <li>Если планы изменились, менеджер оформит возврат криптовалюты за вычетом сетевой комиссии</li>
+          <li>Все чеки хранятся в истории бота — можно вернуться к любой прошлой операции</li>
+        </ul>
+        <div class="verify">
+          <div style="font-size:15px;font-weight:600">Проверка чека</div>
+          <div style="font-size:13px;color:var(--muted);margin-top:4px">Введите номер вида SZ-482913, чтобы увидеть статус.</div>
+          <div class="vrow">
+            <input type="text" id="checkCode" placeholder="SZ-000000" aria-label="Номер чека">
+            <button class="btn btn-primary" id="checkBtn" type="button">Проверить</button>
+          </div>
+          <div class="verify-out" id="checkOut"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ОФИС ================= -->
+<section id="office">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Пункт выдачи</span>
+      <h2>Наш офис в Dubai Marina</h2>
+      <p>Одна физическая точка выдачи — без посредников и курьеров. Крупные суммы готовим заранее по предварительной записи.</p>
+    </div>
+    <div class="office reveal">
+      <div>
+        <h3 style="font-size:clamp(21px,3vw,28px)">Marina Plaza, Dubai</h3>
+        <div class="o-rows">
+          <div class="o-row"><div class="ic">📍</div><div><div class="t">Адрес</div><div class="v">Marina Plaza, офис 2902, 54 этаж, Dubai Marina, Дубай, ОАЭ</div></div></div>
+          <div class="o-row"><div class="ic">🕘</div><div><div class="t">Часы работы кассы</div><div class="v">Ежедневно, 10:00 – 21:00 (GST)</div></div></div>
+          <div class="o-row"><div class="ic">🚇</div><div><div class="t">Как добраться</div><div class="v">Метро DMCC (5 минут пешком), трамвай Marina Towers, парковка в здании</div></div></div>
+          <div class="o-row"><div class="ic">💵</div><div><div class="t">Валюты в кассе</div><div class="v">Доллары США, евро, дирхамы ОАЭ</div></div></div>
+          <div class="o-row"><div class="ic">🚗</div><div><div class="t">Довоз наличных</div><div class="v">От 100 000 AED привезём деньги по вашему адресу в Дубае бесплатно</div></div></div>
+          <div class="o-row"><div class="ic">📞</div><div><div class="t">Перед визитом</div><div class="v">Предупредите менеджера — вас встретят на ресепшене и проводят в офис</div></div></div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn btn-tg" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ Записаться на визит</a>
+          <a class="btn btn-ghost" href="https://maps.google.com/?q=Marina+Plaza+Dubai+Marina" target="_blank" rel="noopener">Открыть на карте</a>
+        </div>
+      </div>
+      <div class="map-box">
+        <div class="map-grid"></div>
+        <div class="pin">📍</div>
+        <div class="mtitle">Marina Plaza · 54 этаж</div>
+        <div class="maddr">Офис 2902, Dubai Marina, Дубай, Объединённые Арабские Эмираты</div>
+        <a class="btn btn-primary" href="https://maps.google.com/?q=Marina+Plaza+Dubai+Marina" target="_blank" rel="noopener">Построить маршрут</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ДОВОЗ НАЛИЧНЫХ ================= -->
+<section id="delivery">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Крупные суммы</span>
+      <h2>Довоз наличных на дом <span class="gr-text">от 100 000 AED</span></h2>
+      <p>Если сумма обмена превышает 100 000 дирхамов, вам не обязательно ехать в офис — привезём деньги по указанному адресу в Дубае.</p>
+    </div>
+    <div class="partner reveal">
+      <div>
+        <h3 style="font-size:clamp(21px,3vw,28px);margin-bottom:12px">Как проходит довоз</h3>
+        <ul>
+          <li>Порог услуги — от 100 000 AED (около 27 000 $). Для сумм меньше выдача только в кассе офиса</li>
+          <li>Довоз по Дубаю бесплатный, за пределы эмирата — по договорённости с менеджером</li>
+          <li>Адрес и время встречи согласовываются заранее, обычно за 24 часа до визита</li>
+          <li>Деньги привозит сотрудник Сервиса, при необходимости — с сопровождением</li>
+          <li>Купюры пересчитываются на месте, чек закрывается только после вашего подтверждения</li>
+          <li>Электронный чек предъявляется курьеру так же, как и в кассе, вместе с документом</li>
+        </ul>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn btn-tg btn-lg" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ Заказать довоз</a>
+          <a class="btn btn-ghost btn-lg" href="#calc">Рассчитать сумму</a>
+        </div>
+      </div>
+      <div class="cards" style="gap:16px">
+        <div class="card"><div class="ic">🚗</div><h3>От 100 000 AED — бесплатно</h3><p>Доставка по Дубаю не тарифицируется и не влияет на курс обмена.</p></div>
+        <div class="card"><div class="ic">🗓</div><h3>Согласование за 24 часа</h3><p>Крупная сумма готовится заранее: сообщите менеджеру адрес, дату и удобное время.</p></div>
+        <div class="card"><div class="ic">🛡</div><h3>Безопасность встречи</h3><p>Маршрут и время не разглашаются, сотрудник приезжает без опознавательных знаков.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ПРЕИМУЩЕСТВА ================= -->
+<section id="advantages">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Почему мы</span>
+      <h2>Преимущества <span class="gr-text">SwapZone</span></h2>
+      <p>Работаем с наличными в Дубае с 2019 года. Никаких банковских переводов, задержек и заморозок счетов.</p>
+    </div>
+    <div class="cards g3">
+      <div class="card reveal"><div class="ic">💵</div><h3>Наличные в тот же день</h3><p>Деньги выдаём из кассы сразу после предъявления чека. Никаких ожиданий банковского клиринга и запросов о происхождении перевода.</p></div>
+      <div class="card reveal"><div class="ic">🧾</div><h3>Чек вместо обещаний</h3><p>После получения криптовалюты вы сразу получаете электронный чек с зафиксированной суммой — это документ, а не устная договорённость.</p></div>
+      <div class="card reveal"><div class="ic">👤</div><h3>Живой менеджер</h3><p>С каждой заявкой работает конкретный сотрудник: подскажет сеть перевода, проверит адрес и предупредит об ошибках до отправки.</p></div>
+      <div class="card reveal"><div class="ic">📈</div><h3>Фиксация курса</h3><p>Курс закрепляется в момент подтверждения заявки менеджером и не меняется, даже если рынок ушёл вниз, пока вы едете в офис.</p></div>
+      <div class="card reveal"><div class="ic">🔐</div><h3>Приватность визита</h3><p>Отдельный офис на 54 этаже, приём по записи, комната для пересчёта. Данные заявки не передаются третьим лицам.</p></div>
+      <div class="card reveal"><div class="ic">🚗</div><h3>Довоз от 100 000 AED</h3><p>Крупные суммы привозим по адресу в Дубае бесплатно — без поездки в офис. Время и место согласуем заранее.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= КУРСЫ ================= -->
+<section id="rates">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Курсы</span>
+      <h2>Курсы выдачи наличных</h2>
+      <p>Ориентировочные значения, пересчитываются каждые 30 секунд. Итоговый курс подтверждает менеджер в Telegram.</p>
+    </div>
+    <div class="rates-wrap reveal">
+      <div class="rates-top">
+        <div class="tabs" id="rateTabs">
+          <button class="tab active" data-f="all">Все</button>
+          <button class="tab" data-f="USD">В долларах</button>
+          <button class="tab" data-f="EUR">В евро</button>
+          <button class="tab" data-f="AED">В дирхамах</button>
+        </div>
+        <div class="rates-search"><input type="text" id="rateSearch" placeholder="Поиск монеты..." aria-label="Поиск монеты"></div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Направление</th><th>Курс выдачи</th><th>Изм. 24ч</th><th>Мин. сумма</th><th>Сеть</th><th></th></tr></thead>
+          <tbody id="ratesBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= КАССА И ЛИМИТЫ ================= -->
+<section id="cash">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Касса</span>
+      <h2>Наличные в кассе и лимиты</h2>
+      <p>Суммы, доступные к выдаче без предварительной записи. Всё, что выше — готовим за 1 рабочий день.</p>
+    </div>
+    <div class="cards g3" id="cashGrid"></div>
+    <div class="cards g4" style="margin-top:20px">
+      <div class="card reveal"><div class="ic">📉</div><h3>Минимум — 20 000 AED</h3><p>Обмен начинается от 20 000 дирхамов (около 5 450 $). Заявки на меньшие суммы не обрабатываем.</p></div>
+      <div class="card reveal"><div class="ic">📊</div><h3>Без записи</h3><p>До 180 000 AED выдаём в кассе в день обращения в рабочие часы офиса.</p></div>
+      <div class="card reveal"><div class="ic">🗓</div><h3>По записи</h3><p>Свыше 180 000 AED — предупредите менеджера за 24 часа, деньги подготовим к вашему приезду.</p></div>
+      <div class="card reveal"><div class="ic">🚗</div><h3>Довоз на дом</h3><p>От 100 000 AED привозим наличные по адресу в Дубае бесплатно, время согласуем заранее.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ЧТО ВЗЯТЬ С СОБОЙ ================= -->
+<section>
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Памятка</span>
+      <h2>Что взять с собой в офис</h2>
+      <p>Чтобы визит занял 10 минут, подготовьте всё заранее.</p>
+    </div>
+    <div class="cards g4">
+      <div class="card reveal"><div class="ic">📱</div><h3>Телефон с чеком</h3><p>Электронный чек в Telegram-боте или его скриншот с читаемым номером и QR-кодом.</p></div>
+      <div class="card reveal"><div class="ic">🪪</div><h3>Документ</h3><p>Паспорт или Emirates ID — нужен для сумм свыше 3 000 USD в рамках AML-процедуры.</p></div>
+      <div class="card reveal"><div class="ic">🎒</div><h3>Сумка для наличных</h3><p>Для крупных сумм: 50 000 $ сотенными — это заметный объём. Пакеты и ленты выдаём в офисе.</p></div>
+      <div class="card reveal"><div class="ic">⏱</div><h3>Запас времени</h3><p>Приезжайте не позднее чем за 30 минут до закрытия кассы, чтобы спокойно пересчитать деньги.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ОТЗЫВЫ ================= -->
+<section id="reviews">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Отзывы</span>
+      <h2>Что говорят клиенты</h2>
+      <p>Средняя оценка 4.9 из 5 по отзывам клиентов, забиравших наличные в офисе.</p>
+    </div>
+    <div class="cards g3">
+      <div class="review reveal"><div class="stars">★★★★★</div><p>«Написал боту вечером, менеджер ответил через минуту. Перевёл USDT, чек пришёл сразу, утром забрал доллары в Marina Plaza. Всё чётко.»</p><div class="who"><div class="av">А</div><div><div class="n">Алексей М.</div><div class="d">USDT → USD, 12 000 $</div></div></div></div>
+      <div class="review reveal"><div class="stars">★★★★★</div><p>«Понравилось, что курс зафиксировали до перевода. Пока ехал в офис, биток просел, но выдали ровно сумму из чека.»</p><div class="who"><div class="av">Д</div><div><div class="n">Дмитрий К.</div><div class="d">BTC → USD, 26 400 $</div></div></div></div>
+      <div class="review reveal"><div class="stars">★★★★★</div><p>«Брала дирхамы на аренду квартиры. Купюры новые, пересчитали при мне на машинке, дали пакет. Заняло минут семь.»</p><div class="who"><div class="av">И</div><div><div class="n">Ирина С.</div><div class="d">ETH → AED, 41 000 AED</div></div></div></div>
+      <div class="review reveal"><div class="stars">★★★★☆</div><p>«Сумма была крупная, попросили паспорт и подождать сутки. Это логично, но лучше сразу закладывать день на подготовку.»</p><div class="who"><div class="av">М</div><div><div class="n">Максим Р.</div><div class="d">USDT → USD, 90 000 $</div></div></div></div>
+      <div class="review reveal"><div class="stars">★★★★★</div><p>«Ошибся сетью при отправке, написал менеджеру — помогли найти транзакцию и всё равно выдали наличные в тот же день.»</p><div class="who"><div class="av">В</div><div><div class="n">Виктор Л.</div><div class="d">TON → EUR, 7 300 €</div></div></div></div>
+      <div class="review reveal"><div class="stars">★★★★★</div><p>«Офис на 54 этаже, встретили на ресепшене. Никакой очереди и лишних глаз — для обмена наличных это важно.»</p><div class="who"><div class="av">Е</div><div><div class="n">Елена П.</div><div class="d">USDT → AED, 55 000 AED</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ПАРТНЁРАМ ================= -->
+<section id="partners">
+  <div class="container">
+    <div class="partner reveal">
+      <div>
+        <span class="sec-tag">Партнёрская программа</span>
+        <h2 style="font-size:clamp(25px,3.6vw,36px);margin-bottom:12px">Приводите клиентов <span class="gr-text">и получайте до 40%</span></h2>
+        <p style="color:#c3cbe2">Рекомендуете нас знакомым, риелторам, релокантам? Получайте долю нашей комиссии с каждой выданной суммы.</p>
+        <ul>
+          <li>От 20% до 40% комиссии в зависимости от оборота</li>
+          <li>Выплаты наличными в офисе или в криптовалюте — на выбор</li>
+          <li>Персональная ссылка и промокод для клиента</li>
+          <li>Прозрачная статистика по каждому обмену в боте</li>
+        </ul>
+        <a class="btn btn-tg btn-lg" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ Стать партнёром</a>
+      </div>
+      <div class="pcalc">
+        <div style="font-size:13.5px;color:var(--muted)">Оборот приведённых клиентов в месяц</div>
+        <div style="font-size:22px;font-weight:700" id="turnoverLabel">50 000 $</div>
+        <input type="range" id="turnover" min="5000" max="500000" step="5000" value="50000" aria-label="Оборот в месяц">
+        <div style="font-size:13.5px;color:var(--muted);margin-top:10px">Ваш доход в месяц</div>
+        <div class="out" id="partnerIncome">200 $</div>
+        <div style="font-size:12.5px;color:var(--muted)">Расчёт при средней комиссии сервиса 1% и ставке партнёра <b id="partnerRate">20%</b>. Значения ориентировочные.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section id="faq">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">FAQ</span>
+      <h2>Частые вопросы</h2>
+      <p>Не нашли ответ? Спросите менеджера в Telegram — отвечаем в течение пары минут.</p>
+    </div>
+    <div class="faq" id="faqList"></div>
+  </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section>
+  <div class="container">
+    <div class="cta reveal">
+      <h2>Начните с сообщения боту</h2>
+      <p>Расчёт занимает минуту, а наличные вы забираете в тот же день в Dubai Marina — или получаете по своему адресу, если сумма превышает 100 000 AED. Обмен от 20 000 AED, онлайн-переводов на карты мы не делаем.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a class="btn btn-tg btn-lg" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ Открыть @SwapZoneBot</a>
+        <a class="btn btn-ghost btn-lg" href="https://t.me/SwapZoneSupport" target="_blank" rel="noopener">Написать менеджеру</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= КОНТАКТЫ ================= -->
+<section id="contacts">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Контакты</span>
+      <h2>Свяжитесь с нами</h2>
+      <p>Заявки принимаем круглосуточно, наличные выдаём в часы работы кассы.</p>
+    </div>
+    <div class="contact-grid">
+      <a class="contact-item reveal" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener"><div class="ic">✈</div><div><div class="t">Telegram-бот для заявок</div><div class="v">@SwapZoneBot</div></div></a>
+      <a class="contact-item reveal" href="https://t.me/SwapZoneSupport" target="_blank" rel="noopener"><div class="ic">💬</div><div><div class="t">Менеджер / поддержка</div><div class="v">@SwapZoneSupport</div></div></a>
+      <div class="contact-item reveal"><div class="ic">📍</div><div><div class="t">Офис и касса</div><div class="v">Marina Plaza, офис 2902, 54 этаж, Dubai Marina, Дубай, ОАЭ</div></div></div>
+      <div class="contact-item reveal"><div class="ic">🕘</div><div><div class="t">Часы работы кассы</div><div class="v">Ежедневно 10:00 – 21:00 (GST)</div></div></div>
+      <a class="contact-item reveal" href="mailto:support@swapzone.example"><div class="ic">✉</div><div><div class="t">Электронная почта</div><div class="v">support@swapzone.example</div></div></a>
+      <a class="contact-item reveal" href="https://t.me/SwapZoneNews" target="_blank" rel="noopener"><div class="ic">📢</div><div><div class="t">Канал с курсами</div><div class="v">@SwapZoneNews</div></div></a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ЛЕГАЛЬНАЯ ИНФОРМАЦИЯ ================= -->
+<section id="legal">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Документы</span>
+      <h2>Правовая информация</h2>
+      <p>Мы работаем в правовом поле ОАЭ и обязаны соблюдать процедуры противодействия отмыванию средств.</p>
+    </div>
+    <div class="legal-grid">
+      <div class="legal-card reveal"><h3>📜 Правила обслуживания</h3><p>Условия оказания услуг, порядок фиксации курса, выдачи наличных по чеку и возврата криптовалюты.</p><span class="lk" data-modal="terms">Читать документ →</span></div>
+      <div class="legal-card reveal"><h3>🧾 Регламент электронного чека</h3><p>Что такое чек, каков срок его действия, как проверить подлинность и что делать при утере доступа.</p><span class="lk" data-modal="check">Читать документ →</span></div>
+      <div class="legal-card reveal"><h3>🛡 AML/KYC-политика</h3><p>Проверка происхождения средств, пороги идентификации, основания для приостановки выдачи.</p><span class="lk" data-modal="aml">Читать документ →</span></div>
+      <div class="legal-card reveal"><h3>🔐 Политика конфиденциальности</h3><p>Какие данные мы собираем при заявке и визите в офис, сколько храним и кому передаём по закону.</p><span class="lk" data-modal="privacy">Читать документ →</span></div>
+      <div class="legal-card reveal"><h3>🍪 Политика cookie</h3><p>Какие файлы cookie использует сайт, зачем они нужны и как отключить их в браузере.</p><span class="lk" data-modal="cookie">Читать документ →</span></div>
+      <div class="legal-card reveal"><h3>⚠ Раскрытие рисков</h3><p>Волатильность активов, необратимость блокчейн-транзакций, налоговые обязанности клиента.</p><span class="lk" data-modal="risk">Читать документ →</span></div>
+    </div>
+
+    <div class="company-box reveal">
+      <div class="row"><span>Юридическое лицо</span><span>SwapZone Digital Services FZ-LLC</span></div>
+      <div class="row"><span>Лицензия / регистрация</span><span>№ XXXXXX (укажите номер)</span></div>
+      <div class="row"><span>Юрисдикция</span><span>Дубай, ОАЭ</span></div>
+      <div class="row"><span>Адрес офиса и кассы</span><span>Marina Plaza, оф. 2902, 54 этаж, Dubai Marina</span></div>
+      <div class="row"><span>Часы работы кассы</span><span>Ежедневно 10:00 – 21:00 GST</span></div>
+      <div class="row"><span>Контакт для запросов</span><span>legal@swapzone.example</span></div>
+      <div class="row"><span>Ответственный за AML</span><span>compliance@swapzone.example</span></div>
+      <div class="row"><span>Возрастное ограничение</span><span>18+</span></div>
+    </div>
+
+    <div class="disclaimer reveal">
+      <b>Уведомление.</b> Сервис оказывает услуги обмена криптовалюты на наличные при личном визите клиента в офис по адресу Marina Plaza, Dubai Marina либо, при сумме от 100 000 AED, с довозом наличных по согласованному адресу в Дубае. Минимальная сумма обмена — 20 000 AED. Онлайн-переводы на банковские карты и счета не производятся. Операции с цифровыми активами связаны с высокой волатильностью; транзакции в блокчейне необратимы — отправка на неверный адрес или в неверную сеть приводит к безвозвратной утрате средств. Сервис не является финансовым консультантом и не даёт инвестиционных рекомендаций. Клиент самостоятельно отвечает за соблюдение законодательства и налоговых обязанностей страны своего резидентства. Обслуживание доступно лицам старше 18 лет; отказ в обслуживании возможен без объяснения причин при срабатывании AML-процедур. Реквизиты юридического лица, номер лицензии и контактные адреса на странице являются демонстрационными и подлежат замене на действительные данные оператора.
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ================= ФУТЕР ================= -->
+<footer>
+  <div class="container">
+    <div class="f-grid">
+      <div class="f-col f-about">
+        <a href="#top" class="logo"><div class="logo-mark">S</div><div>Swap<span class="accent">Zone</span></div></a>
+        <p>Обмен криптовалюты на наличные в Дубае с 2019 года. Заявка в Telegram, электронный чек, выдача из кассы в Dubai Marina.</p>
+        <div class="socials">
+          <a href="https://t.me/SwapZoneBot" target="_blank" rel="noopener" aria-label="Telegram-бот">✈</a>
+          <a href="https://t.me/SwapZoneNews" target="_blank" rel="noopener" aria-label="Новости">📢</a>
+          <a href="mailto:support@swapzone.example" aria-label="Почта">✉</a>
+          <a href="#faq" aria-label="Помощь">?</a>
+        </div>
+        <div class="pay-icons">
+          <span>Bitcoin</span><span>Ethereum</span><span>USDT TRC-20</span><span>USDT ERC-20</span><span>TON</span><span>USD · EUR · AED наличными</span>
+        </div>
+      </div>
+      <div class="f-col">
+        <h4>Сервис</h4>
+        <a href="#calc">Расчёт суммы</a>
+        <a href="#how">Как это работает</a>
+        <a href="#check">Электронный чек</a>
+        <a href="#office">Офис в Дубае</a>
+        <a href="#delivery">Довоз наличных</a>
+        <a href="#cash">Касса и лимиты</a>
+        <a href="#partners">Партнёрам</a>
+      </div>
+      <div class="f-col">
+        <h4>Документы</h4>
+        <a data-modal="terms">Правила обслуживания</a>
+        <a data-modal="check">Регламент чека</a>
+        <a data-modal="aml">AML/KYC-политика</a>
+        <a data-modal="privacy">Конфиденциальность</a>
+        <a data-modal="risk">Раскрытие рисков</a>
+      </div>
+      <div class="f-col">
+        <h4>Поддержка</h4>
+        <a href="#faq">Частые вопросы</a>
+        <a href="#contacts">Контакты</a>
+        <a href="https://t.me/SwapZoneSupport" target="_blank" rel="noopener">Чат с менеджером</a>
+        <a href="mailto:legal@swapzone.example">Юридические запросы</a>
+        <a data-modal="cookie">Файлы cookie</a>
+      </div>
+    </div>
+    <div class="f-bottom">
+      <div>© <span id="year">2026</span> SwapZone Digital Services FZ-LLC. Все права защищены.</div>
+      <div>Выдача наличных только в офисе · 18+</div>
+    </div>
+  </div>
+</footer>
+
+<div class="modal" id="modal">
+  <div class="modal-bg" data-close></div>
+  <div class="modal-box" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close aria-label="Закрыть">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="cookie" id="cookie">
+  <p>Мы используем файлы cookie для работы сайта и аналитики. Продолжая пользоваться сайтом, вы соглашаетесь с <a data-modal="cookie" style="cursor:pointer">политикой cookie</a>.</p>
+  <button class="btn btn-primary" id="cookieOk">Принять</button>
+</div>
+
+<a class="tg-float" href="https://t.me/SwapZoneBot" target="_blank" rel="noopener">✈ <span>Telegram-бот</span></a>
+<button class="to-top" id="toTop" aria-label="Наверх">↑</button>
+
+<script>
+(function(){
+'use strict';
+
+/* =================================================================
+   НАСТРОЙКИ САЙТА
+   botUrl  — ссылка на вашего Telegram-бота (кнопки ведут сюда)
+   apiBase — адрес сервера проверки чеков (server.js).
+             '' — тот же домен, что и сайт.
+             Пример для отдельного сервера: 'https://api.swapzone.example'
+   ================================================================= */
+var CFG = {
+  botUrl: 'https://t.me/SwapZoneBot',
+  apiBase: ''
+};
+
+/* ================= ДАННЫЕ ================= */
+var CRYPTO = [
+  {c:'BTC', n:'Bitcoin',            usd:96400, col:'#f7931a', ic:'₿', dec:6, min:0.006,  net:'Bitcoin'},
+  {c:'ETH', n:'Ethereum',           usd:3420,  col:'#8a92b2', ic:'Ξ', dec:5, min:0.15,   net:'ERC-20'},
+  {c:'USDT',n:'Tether TRC-20',      usd:1,     col:'#26a17b', ic:'₮', dec:2, min:500,    net:'TRC-20'},
+  {c:'USDT',n:'Tether ERC-20',      usd:1,     col:'#26a17b', ic:'₮', dec:2, min:500,    net:'ERC-20', k:'USDT-E'},
+  {c:'USDC',n:'USD Coin',           usd:1,     col:'#2775ca', ic:'$', dec:2, min:500,    net:'ERC-20'},
+  {c:'TON', n:'Toncoin',            usd:5.42,  col:'#0098ea', ic:'T', dec:3, min:95,     net:'TON'},
+  {c:'LTC', n:'Litecoin',           usd:104.3, col:'#345d9d', ic:'Ł', dec:4, min:5,      net:'Litecoin'},
+  {c:'TRX', n:'TRON',               usd:0.238, col:'#e50915', ic:'T', dec:2, min:2100,   net:'TRC-20'},
+  {c:'SOL', n:'Solana',             usd:184.5, col:'#14f195', ic:'S', dec:4, min:3,      net:'Solana'},
+  {c:'BNB', n:'BNB',                usd:612,   col:'#f3ba2f', ic:'B', dec:4, min:0.9,    net:'BEP-20'},
+  {c:'XMR', n:'Monero',             usd:168,   col:'#ff6600', ic:'ɱ', dec:4, min:3,      net:'Monero'}
+];
+CRYPTO.forEach(function(x){ if(!x.k) x.k = x.c; });
+
+var CASH = [
+  {c:'USD', n:'Доллары США, наличные',   usd:1,      col:'#85bb65', ic:'$', dec:0, res:850000},
+  {c:'EUR', n:'Евро, наличные',          usd:1.09,   col:'#4b7bec', ic:'€', dec:0, res:340000},
+  {c:'AED', n:'Дирхамы ОАЭ, наличные',   usd:0.2723, col:'#00a651', ic:'د', dec:0, res:2600000}
+];
+
+var byKey = {}, byCash = {};
+CRYPTO.forEach(function(x){ byKey[x.k] = x; });
+CASH.forEach(function(x){ byCash[x.c] = x; });
+
+/* ===== ЛИМИТЫ СЕРВИСА ===== */
+var MIN_AED = 20000;        /* минимальная сумма обмена */
+var DELIVERY_AED = 100000;  /* порог довоза наличных на дом */
+var AED_USD = byCash.AED.usd;
+var MIN_USD = MIN_AED * AED_USD;
+var DELIVERY_USD = DELIVERY_AED * AED_USD;
+
+/* минимум по каждой монете считаем от 20 000 AED */
+function niceUp(v){
+  if(v >= 1000) return Math.ceil(v/100)*100;
+  if(v >= 100)  return Math.ceil(v/10)*10;
+  if(v >= 10)   return Math.ceil(v);
+  if(v >= 1)    return Math.ceil(v*10)/10;
+  if(v >= 0.1)  return Math.ceil(v*100)/100;
+  return Math.ceil(v*1000)/1000;
+}
+function refreshMins(){
+  CRYPTO.forEach(function(x){ x.min = niceUp(MIN_USD / x.usd); });
+}
+refreshMins();
+
+/* комиссия зависит от суммы в USD */
+function feeFor(usdAmount){
+  if(usdAmount >= 100000) return 0.005;
+  if(usdAmount >= 20000)  return 0.007;
+  if(usdAmount >= 5000)   return 0.01;
+  return 0.012;
+}
+
+/* ================= УТИЛИТЫ ================= */
+function fmt(v,d){
+  if(!isFinite(v)) return '0';
+  return v.toLocaleString('ru-RU',{minimumFractionDigits:0,maximumFractionDigits:d});
+}
+function icoHTML(x,cls){ return '<span class="'+(cls||'cico')+'" style="background:'+x.col+'">'+x.ic+'</span>'; }
+function $(s){ return document.querySelector(s); }
+function $$(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
+
+/* ================= МОБИЛЬНОЕ МЕНЮ ================= */
+var burger = $('#burger'), mmenu = $('#mobileMenu');
+burger.addEventListener('click', function(){
+  burger.classList.toggle('open');
+  mmenu.classList.toggle('open');
+  document.body.classList.toggle('lock', mmenu.classList.contains('open'));
+});
+$$('#mobileMenu a').forEach(function(a){
+  a.addEventListener('click', function(){
+    burger.classList.remove('open'); mmenu.classList.remove('open');
+    document.body.classList.remove('lock');
+  });
+});
+
+/* ================= ХЕДЕР / ВВЕРХ ================= */
+var header = $('#header'), toTop = $('#toTop');
+window.addEventListener('scroll', function(){
+  var y = window.scrollY;
+  header.classList.toggle('scrolled', y > 10);
+  toTop.classList.toggle('show', y > 600);
+}, {passive:true});
+toTop.addEventListener('click', function(){ window.scrollTo({top:0,behavior:'smooth'}); });
+
+/* ================= СПИСКИ ВАЛЮТ ================= */
+var state = { give:'BTC', get:'USD' };
+
+function buildGiveList(el){
+  var html = '<input type="text" class="cur-search" placeholder="Поиск монеты...">' +
+             '<div class="cur-group">Криптовалюты</div>';
+  CRYPTO.forEach(function(x){
+    html += '<div class="cur-item" data-code="'+x.k+'">'+icoHTML(x)+
+            '<div><div class="nm">'+x.c+'</div><div class="sub">'+x.n+'</div></div></div>';
+  });
+  el.innerHTML = html;
+  bindSearch(el, function(code){ var x = byKey[code]; return x.c+' '+x.n+' '+x.net; });
+  el.querySelectorAll('.cur-item').forEach(function(it){
+    it.addEventListener('click', function(){
+      state.give = it.getAttribute('data-code');
+      closeLists(); syncUI(); calc('give');
+    });
+  });
+}
+function buildGetList(el){
+  var html = '<div class="cur-group">Наличные в кассе</div>';
+  CASH.forEach(function(x){
+    html += '<div class="cur-item" data-code="'+x.c+'">'+icoHTML(x)+
+            '<div><div class="nm">'+x.c+'</div><div class="sub">'+x.n+'</div></div></div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.cur-item').forEach(function(it){
+    it.addEventListener('click', function(){
+      state.get = it.getAttribute('data-code');
+      closeLists(); syncUI(); calc('give');
+    });
+  });
+}
+function bindSearch(el, textOf){
+  var s = el.querySelector('.cur-search');
+  if(!s) return;
+  s.addEventListener('input', function(){
+    var q = this.value.toLowerCase();
+    el.querySelectorAll('.cur-item').forEach(function(it){
+      it.style.display = textOf(it.getAttribute('data-code')).toLowerCase().indexOf(q) > -1 ? '' : 'none';
+    });
+  });
+}
+function closeLists(){
+  $$('.cur-list').forEach(function(l){ l.classList.remove('open'); });
+  $$('.cur-btn').forEach(function(b){ b.classList.remove('open'); });
+}
+function toggleList(btn, list){
+  var isOpen = list.classList.contains('open');
+  closeLists();
+  if(!isOpen){
+    list.classList.add('open'); btn.classList.add('open');
+    var s = list.querySelector('.cur-search');
+    if(s){ s.value = ''; s.dispatchEvent(new Event('input')); if(window.innerWidth > 760) s.focus(); }
+  }
+}
+buildGiveList($('#giveList'));
+buildGetList($('#getList'));
+$('#giveBtn').addEventListener('click', function(e){ e.stopPropagation(); toggleList(this, $('#giveList')); });
+$('#getBtn').addEventListener('click',  function(e){ e.stopPropagation(); toggleList(this, $('#getList')); });
+$$('.cur-list').forEach(function(l){ l.addEventListener('click', function(e){ e.stopPropagation(); }); });
+document.addEventListener('click', closeLists);
+
+function syncUI(){
+  var g = byKey[state.give], r = byCash[state.get];
+  $('#giveCode').textContent = g.c;
+  $('#getCode').textContent  = r.c;
+  var gi = $('#giveIco'), ri = $('#getIco');
+  gi.textContent = g.ic; gi.style.background = g.col;
+  ri.textContent = r.ic; ri.style.background = r.col;
+  $('#cashInfo').textContent = 'В кассе: ' + fmt(r.res, 0) + ' ' + r.c;
+  $('#setMin').textContent = 'Мин. ' + fmt(g.min, g.dec) + ' ' + g.c;
+}
+
+/* ================= КАЛЬКУЛЯТОР ================= */
+var giveInp = $('#giveAmount'), getInp = $('#getAmount');
+
+function calc(src){
+  var g = byKey[state.give], r = byCash[state.get];
+  var usdAmount, fee, k;
+
+  if(src === 'get'){
+    var out = parseFloat(getInp.value) || 0;
+    usdAmount = out * r.usd;
+    fee = feeFor(usdAmount);
+    k = (g.usd / r.usd) * (1 - fee);
+    giveInp.value = out > 0 ? (out / k).toFixed(g.dec) : '';
+  } else {
+    var inp = parseFloat(giveInp.value) || 0;
+    usdAmount = inp * g.usd;
+    fee = feeFor(usdAmount);
+    k = (g.usd / r.usd) * (1 - fee);
+    getInp.value = inp > 0 ? (inp * k).toFixed(r.dec) : '';
+  }
+  $('#rateLine').textContent = '1 ' + g.c + ' = ' + fmt(k, 2) + ' ' + r.c;
+  $('#feeLine').textContent = (fee*100).toFixed(1).replace('.',',') + '% (уже в курсе)';
+  refreshBotLink();
+}
+giveInp.addEventListener('input', function(){ calc('give'); });
+getInp.addEventListener('input',  function(){ calc('get'); });
+$('#setMin').addEventListener('click', function(){ giveInp.value = byKey[state.give].min; calc('give'); });
+
+/* ================= ПЕРЕХОД В БОТА ================= */
+/* Кнопка всегда ведёт в бота. В start-параметре передаём расчёт,
+   чтобы менеджер сразу видел монету, сумму и валюту выдачи. */
+var botBtn = $('#toBotBtn');
+function botLink(){
+  var g = byKey[state.give], r = byCash[state.get];
+  var amount = parseFloat(giveInp.value) || 0;
+  if(amount <= 0) return CFG.botUrl;
+  /* Telegram допускает в payload только A-Z a-z 0-9 _ - (до 64 символов) */
+  var payload = ('x_' + g.k + '_' + amount + '_' + r.c)
+    .replace(/\./g,'-').replace(/[^A-Za-z0-9_-]/g,'').slice(0,64);
+  return CFG.botUrl + '?start=' + payload;
+}
+function refreshBotLink(){
+  var g = byKey[state.give], r = byCash[state.get];
+  var amount = parseFloat(giveInp.value) || 0;
+  var msg = $('#formMsg');
+  botBtn.href = botLink();
+  msg.className = 'form-msg';
+  msg.textContent = '';
+  if(amount > 0 && amount < g.min){
+    msg.className = 'form-msg bad';
+    msg.textContent = 'Минимальная сумма обмена — от 20 000 AED, это примерно ' + fmt(g.min, g.dec) + ' ' + g.c + '. Меньшие заявки менеджер не оформляет.';
+    return;
+  }
+  var usdOut = (parseFloat(getInp.value) || 0) * byCash[state.get].usd;
+  if(usdOut >= DELIVERY_USD){
+    msg.className = 'form-msg ok';
+    msg.textContent = 'Сумма превышает 100 000 AED — доступен бесплатный довоз наличных по вашему адресу в Дубае.';
+  }
+}
+
+/* ================= ТИКЕР ================= */
+(function(){
+  var seen = {}, items = '';
+  CRYPTO.forEach(function(x){
+    if(seen[x.c]) return;
+    seen[x.c] = 1;
+    var ch = (Math.random()*8 - 3);
+    items += '<div class="tk">' + icoHTML(x) + '<span>' + x.c + '</span><span class="p">$' +
+      fmt(x.usd, x.usd < 1 ? 4 : 2) + '</span><span class="' + (ch>=0?'up':'down') + '">' +
+      (ch>=0?'▲':'▼') + ' ' + Math.abs(ch).toFixed(2) + '%</span></div>';
+  });
+  items += '<div class="tk">' + icoHTML(byCash.AED) + '<span>USD/AED</span><span class="p">3,6725</span></div>';
+  items += '<div class="tk">' + icoHTML(byCash.EUR) + '<span>EUR/USD</span><span class="p">1,0900</span></div>';
+  $('#ticker').innerHTML = items + items;
+})();
+
+/* ================= ТАБЛИЦА КУРСОВ ================= */
+function renderRates(filter, query){
+  var body = $('#ratesBody'), html = '';
+  CRYPTO.forEach(function(a){
+    CASH.forEach(function(b){
+      if(filter !== 'all' && b.c !== filter) return;
+      var name = a.c + ' → ' + b.c;
+      if(query && (name + ' ' + a.n + ' ' + a.net).toLowerCase().indexOf(query) === -1) return;
+      var k = (a.usd / b.usd) * (1 - feeFor(5000));
+      var ch = (Math.random()*6 - 2.4);
+      html += '<tr>' +
+        '<td><div class="pair">' + icoHTML(a) + icoHTML(b) + '<span>' + name + '</span></div></td>' +
+        '<td>1 ' + a.c + ' = ' + fmt(k, 2) + ' ' + b.c + '</td>' +
+        '<td class="' + (ch>=0?'up':'down') + '">' + (ch>=0?'+':'−') + Math.abs(ch).toFixed(2) + '%</td>' +
+        '<td>' + fmt(a.min, a.dec) + ' ' + a.c + '</td>' +
+        '<td>' + a.net + '</td>' +
+        '<td><button class="mini-btn" data-from="' + a.k + '" data-to="' + b.c + '">Рассчитать</button></td>' +
+        '</tr>';
+    });
+  });
+  if(!html) html = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:34px">Направления не найдены</td></tr>';
+  body.innerHTML = html;
+  body.querySelectorAll('.mini-btn').forEach(function(b){
+    b.addEventListener('click', function(){
+      state.give = b.getAttribute('data-from');
+      state.get  = b.getAttribute('data-to');
+      syncUI();
+      giveInp.value = byKey[state.give].min;
+      calc('give');
+      document.getElementById('calc').scrollIntoView({behavior:'smooth',block:'center'});
+    });
+  });
+}
+var curFilter = 'all', curQuery = '';
+$$('#rateTabs .tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    $$('#rateTabs .tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+    curFilter = t.getAttribute('data-f');
+    renderRates(curFilter, curQuery);
+  });
+});
+$('#rateSearch').addEventListener('input', function(){
+  curQuery = this.value.trim().toLowerCase();
+  renderRates(curFilter, curQuery);
+});
+
+/* ================= КАССА ================= */
+(function(){
+  var max = Math.max.apply(null, CASH.map(function(x){ return x.res * x.usd; }));
+  $('#cashGrid').innerHTML = CASH.map(function(x){
+    var pct = Math.max(14, Math.round((x.res * x.usd) / max * 100));
+    return '<div class="reserve reveal">' + icoHTML(x) +
+      '<div style="flex:1;min-width:0"><div class="nm">' + x.n + '</div>' +
+      '<div class="val">' + fmt(x.res, 0) + ' ' + x.c + '</div>' +
+      '<div class="bar"><i data-w="' + pct + '" style="width:0"></i></div></div></div>';
+  }).join('');
+})();
+
+/* ================= ПРОВЕРКА ЧЕКА ================= */
+function pad2(n){ return n < 10 ? '0' + n : '' + n; }
+function fmtDate(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return '—';
+  return pad2(d.getDate()) + '.' + pad2(d.getMonth()+1) + '.' + d.getFullYear() +
+         ', ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+function humanLeft(ms){
+  if(ms <= 0) return 'срок истёк';
+  var h = Math.floor(ms/3600000), m = Math.floor(ms%3600000/60000);
+  if(h >= 24){ var d = Math.floor(h/24); return d + ' д ' + (h%24) + ' ч'; }
+  return h > 0 ? (h + ' ч ' + m + ' мин') : (m + ' мин');
+}
+var checkBtn = $('#checkBtn'), checkInput = $('#checkCode'), checkOut = $('#checkOut');
+
+/* автоформат ввода: sz482913 -> SZ-482913 */
+checkInput.addEventListener('input', function(){
+  var digits = this.value.toUpperCase().replace(/[^0-9]/g,'').slice(0,6);
+  this.value = digits ? 'SZ-' + digits : '';
+});
+
+function verifyCheck(){
+  var raw = checkInput.value.trim().toUpperCase();
+  var m = raw.match(/^SZ-?(\d{6})$/);
+  if(!m){
+    checkOut.className = 'verify-out bad';
+    checkOut.textContent = 'Неверный формат номера. Пример корректного номера: SZ-482913.';
+    return;
+  }
+  var code = 'SZ-' + m[1];
+  checkBtn.disabled = true;
+  checkOut.className = 'verify-out ok';
+  checkOut.textContent = 'Проверяем чек ' + code + '…';
+
+  var ctrl = ('AbortController' in window) ? new AbortController() : null;
+  var timer = setTimeout(function(){ if(ctrl) ctrl.abort(); }, 12000);
+
+  fetch(CFG.apiBase + '/api/checks/' + encodeURIComponent(code), {
+    method:'GET',
+    headers:{'Accept':'application/json'},
+    signal: ctrl ? ctrl.signal : undefined
+  }).then(function(res){
+    return res.json().catch(function(){ throw new Error('bad-json'); })
+      .then(function(data){ return {status:res.status, data:data}; });
+  }).then(function(r){
+    var d = r.data || {};
+    if(r.status === 404 || d.status === 'not_found'){
+      checkOut.className = 'verify-out bad';
+      checkOut.innerHTML = 'Чек <b>' + code + '</b> не найден. Проверьте номер или напишите менеджеру в Telegram.';
+      return;
+    }
+    if(r.status === 429){
+      checkOut.className = 'verify-out bad';
+      checkOut.textContent = 'Слишком много запросов. Повторите попытку через минуту.';
+      return;
+    }
+    if(r.status >= 400){
+      checkOut.className = 'verify-out bad';
+      checkOut.textContent = 'Сервис проверки временно недоступен. Статус чека уточните в Telegram-боте.';
+      return;
+    }
+    var amount = (typeof d.amount === 'number')
+      ? fmt(d.amount, 0) + ' ' + (d.currency || '')
+      : '—';
+    if(d.status === 'active'){
+      var left = new Date(d.expiresAt).getTime() - Date.now();
+      checkOut.className = 'verify-out ok';
+      checkOut.innerHTML = 'Чек <b>' + code + '</b> действителен.<br>' +
+        'К выдаче: <b>' + amount + '</b>' + (d.pickup ? ' · ' + d.pickup : '') + '<br>' +
+        'Действителен до ' + fmtDate(d.expiresAt) + ' (осталось ' + humanLeft(left) + ').';
+    } else if(d.status === 'redeemed'){
+      checkOut.className = 'verify-out bad';
+      checkOut.innerHTML = 'Чек <b>' + code + '</b> уже погашен' +
+        (d.redeemedAt ? ' ' + fmtDate(d.redeemedAt) : '') + '. Наличные по нему выданы.';
+    } else if(d.status === 'expired'){
+      checkOut.className = 'verify-out bad';
+      checkOut.innerHTML = 'Срок действия чека <b>' + code + '</b> истёк ' + fmtDate(d.expiresAt) +
+        '. Напишите менеджеру — чек можно продлить или пересчитать по актуальному курсу.';
+    } else if(d.status === 'cancelled'){
+      checkOut.className = 'verify-out bad';
+      checkOut.innerHTML = 'Чек <b>' + code + '</b> аннулирован. Уточните детали у менеджера.';
+    } else {
+      checkOut.className = 'verify-out bad';
+      checkOut.textContent = 'Не удалось определить статус чека. Напишите менеджеру в Telegram.';
+    }
+  }).catch(function(){
+    checkOut.className = 'verify-out bad';
+    checkOut.innerHTML = 'Сервис проверки сейчас недоступен. Статус чека всегда можно уточнить в ' +
+      '<a href="' + CFG.botUrl + '" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">Telegram-боте</a>.';
+  }).then(function(){
+    clearTimeout(timer);
+    checkBtn.disabled = false;
+  });
+}
+checkBtn.addEventListener('click', verifyCheck);
+checkInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') verifyCheck(); });
+
+/* если открыли ссылку вида index.html?check=SZ-482913 — проверяем сразу */
+(function(){
+  var q = new URLSearchParams(window.location.search).get('check');
+  if(!q) return;
+  checkInput.value = q.toUpperCase();
+  checkInput.dispatchEvent(new Event('input'));
+  document.getElementById('check').scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(verifyCheck, 400);
+})();
+
+/* ================= FAQ ================= */
+var FAQ = [
+  ['Можно ли получить деньги на карту или счёт?','Нет. Мы работаем только с наличными: выдаём их в офисе в Dubai Marina или привозим по адресу при сумме от 100 000 AED. Онлайн-переводы на карты, банковские счета и платёжные системы сервис не осуществляет.'],
+  ['Нужно ли приезжать лично?','Да, наличные выдаются лично держателю чека — в кассе либо при довозе на дом от 100 000 AED. Если получить деньги должен другой человек, предупредите менеджера заранее: чек будет оформлен на его данные.'],
+  ['Как быстро приходит электронный чек?','Сразу после зачисления криптовалюты и получения необходимого числа подтверждений сети — обычно в течение 5–20 минут. Чек приходит в Telegram-бот.'],
+  ['Сколько действует чек?','48 часов с момента выдачи. Если вы не успеваете приехать, напишите менеджеру — срок можно продлить либо оформить возврат криптовалюты по актуальному курсу.'],
+  ['Какая комиссия?','От 0,5% до 1,2% в зависимости от суммы: чем крупнее обмен, тем ниже ставка. Комиссия уже включена в курс, который вы видите в расчёте и в чеке. Сетевую комиссию блокчейна оплачивает отправитель.'],
+  ['Фиксируется ли курс?','Да. Курс закрепляется менеджером в момент подтверждения заявки и указывается в чеке. Изменение рынка после этого на вашу сумму не влияет.'],
+  ['Какая минимальная сумма обмена?','От 20 000 AED — это примерно 5 450 долларов. Заявки на меньшие суммы мы не обрабатываем. Без предварительной записи выдаём до 180 000 AED в день, более крупные суммы готовим за 24 часа.'],
+  ['Можно ли получить наличные без поездки в офис?','Да, при сумме от 100 000 AED мы бесплатно привозим деньги по вашему адресу в Дубае. Адрес и время согласуются с менеджером заранее, обычно за сутки. Для сумм ниже этого порога выдача производится только в кассе офиса.'],
+  ['Довоз наличных платный?','По Дубаю — бесплатно и без влияния на курс. Выезд за пределы эмирата обсуждается с менеджером индивидуально.'],
+  ['Нужен ли паспорт?','Для сумм до 3 000 USD документ обычно не требуется. Свыше этого порога мы обязаны провести идентификацию: подойдёт загранпаспорт или Emirates ID.'],
+  ['В каких валютах выдаёте наличные?','Доллары США, евро и дирхамы ОАЭ. Валюту выбираете при оформлении заявки, она фиксируется в чеке.'],
+  ['Что если я ошибся сетью при переводе?','Сразу напишите менеджеру и пришлите хеш транзакции. В части сетей средства удаётся восстановить, но гарантировать это невозможно — блокчейн-переводы необратимы.'],
+  ['Как добраться до офиса?','Marina Plaza, Dubai Marina: 5 минут пешком от метро DMCC, рядом остановка трамвая Marina Towers, в здании есть парковка. Офис 2902 на 54 этаже, вас встретят на ресепшене.'],
+  ['Работаете ли вы в выходные?','Касса работает ежедневно с 10:00 до 21:00 по времени Дубая, включая выходные. Заявки в боте принимаются круглосуточно.']
+];
+$('#faqList').innerHTML = FAQ.map(function(f){
+  return '<div class="qa reveal"><button class="q" type="button"><span>' + f[0] +
+    '</span><span class="pl">+</span></button><div class="a"><p>' + f[1] + '</p></div></div>';
+}).join('');
+$$('.qa .q').forEach(function(q){
+  q.addEventListener('click', function(){
+    var item = q.parentElement, ans = item.querySelector('.a');
+    var open = item.classList.contains('open');
+    $$('.qa').forEach(function(x){ x.classList.remove('open'); x.querySelector('.a').style.maxHeight = null; });
+    if(!open){ item.classList.add('open'); ans.style.maxHeight = ans.scrollHeight + 'px'; }
+  });
+});
+
+/* ================= ПАРТНЁРСКИЙ КАЛЬКУЛЯТОР ================= */
+var turn = $('#turnover');
+function partnerCalc(){
+  var v = parseInt(turn.value, 10);
+  var rate = v >= 300000 ? 0.40 : v >= 100000 ? 0.30 : v >= 30000 ? 0.25 : 0.20;
+  $('#turnoverLabel').textContent = fmt(v,0) + ' $';
+  $('#partnerRate').textContent = Math.round(rate*100) + '%';
+  $('#partnerIncome').textContent = fmt(v * 0.01 * rate, 0) + ' $';
+}
+turn.addEventListener('input', partnerCalc);
+partnerCalc();
+
+/* ================= ДОКУМЕНТЫ ================= */
+var DOCS = {
+  terms:{t:'Правила обслуживания',u:'Редакция от 1 июня 2026 года',b:
+    '<h4>1. Общие положения</h4><p>Настоящие Правила регулируют отношения между SwapZone Digital Services FZ-LLC (далее — «Сервис») и физическим лицом (далее — «Клиент») при обмене криптовалюты на наличные денежные средства с выдачей в офисе Сервиса по адресу Marina Plaza, офис 2902, Dubai Marina, Дубай, ОАЭ.</p>'+
+    '<h4>2. Характер услуги</h4><p>Сервис не осуществляет переводы на банковские карты, счета и электронные кошельки. Получение средств возможно только наличными: в кассе офиса при личном визите Клиента либо, при сумме от 100 000 AED, путём довоза по согласованному адресу в Дубае. В обоих случаях требуется предъявление действующего электронного чека.</p>'+
+    '<h4>2.1. Минимальная сумма</h4><p>Минимальная сумма обмена составляет 20 000 AED (или эквивалент в USD/EUR по курсу Сервиса). Заявки на меньшие суммы не принимаются.</p>'+
+    '<h4>2.2. Довоз наличных</h4><p>При сумме выдачи от 100 000 AED Сервис по запросу Клиента доставляет наличные по адресу в пределах эмирата Дубай без дополнительной платы. Адрес, дата и время согласовываются с менеджером заранее, как правило не менее чем за 24 часа. Выезд за пределы эмирата обсуждается индивидуально. Клиент обязан пересчитать сумму в присутствии сотрудника Сервиса; после подтверждения получения чек считается закрытым, претензии по количеству купюр не принимаются.</p>'+
+    '<h4>3. Порядок обслуживания</h4><ul><li>Клиент оставляет заявку в Telegram-боте Сервиса.</li><li>Менеджер подтверждает сумму, фиксирует курс и предоставляет адрес для перевода криптовалюты.</li><li>После зачисления средств и подтверждения сети Клиент получает электронный чек.</li><li>Клиент приезжает в офис в часы работы кассы и получает наличные по чеку.</li></ul>'+
+    '<h4>4. Фиксация курса</h4><p>Курс фиксируется менеджером в момент подтверждения заявки и указывается в электронном чеке. Последующие колебания рынка на сумму выдачи не влияют в течение срока действия чека.</p>'+
+    '<h4>5. Обязанности Клиента</h4><ul><li>Подтвердить возраст 18 лет и законность происхождения средств.</li><li>Переводить криптовалюту только на адрес и в сети, указанные менеджером.</li><li>Явиться за наличными в срок действия чека и предъявить документ, если этого требует AML-порог.</li><li>Пересчитать полученные денежные средства до выхода из офиса; претензии по количеству купюр после выхода не принимаются.</li></ul>'+
+    '<h4>6. Права Сервиса</h4><ul><li>Приостановить выдачу и запросить документы при срабатывании AML-процедур.</li><li>Отказать в обслуживании без объяснения причин.</li><li>Изменять курсы, комиссии и лимиты в одностороннем порядке до момента подтверждения заявки.</li></ul>'+
+    '<h4>7. Возврат</h4><p>До момента выдачи наличных Клиент вправе отказаться от сделки. Криптовалюта возвращается на адрес отправителя по актуальному курсу за вычетом сетевой комиссии и разницы курсов. После выдачи наличных сделка считается завершённой.</p>'+
+    '<h4>8. Ограничение ответственности</h4><p>Сервис не отвечает за убытки, вызванные ошибками Клиента при выборе сети или адреса перевода, сбоями блокчейн-сетей, а также обстоятельствами непреодолимой силы.</p>'+
+    '<h4>9. Споры</h4><p>Споры разрешаются переговорами через менеджера в течение 14 календарных дней. При недостижении согласия — в компетентном суде по месту регистрации Сервиса.</p>'},
+  check:{t:'Регламент электронного чека',u:'Редакция от 1 июня 2026 года',b:
+    '<h4>1. Что такое электронный чек</h4><p>Электронный чек — цифровой документ, формируемый Сервисом после зачисления криптовалюты Клиента. Чек подтверждает обязательство Сервиса выдать указанную в нём сумму наличных в кассе офиса.</p>'+
+    '<h4>2. Содержание чека</h4><ul><li>Уникальный номер вида SZ-XXXXXX и QR-код.</li><li>Сумма и валюта выдачи (USD, EUR или AED).</li><li>Полученная криптовалюта, сумма и зафиксированный курс.</li><li>Дата и время формирования, срок действия, адрес пункта выдачи.</li><li>Идентификатор менеджера, оформившего сделку.</li></ul>'+
+    '<h4>3. Срок действия</h4><p>Чек действителен 48 часов с момента формирования. По запросу Клиента срок может быть продлён менеджером. По истечении срока сумма пересчитывается по актуальному курсу либо оформляется возврат.</p>'+
+    '<h4>4. Получение наличных</h4><p>Наличные выдаются держателю чека при его предъявлении в офисе. При сумме свыше AML-порога дополнительно предъявляется документ, удостоверяющий личность. Выдача третьему лицу возможна только при предварительном согласовании с менеджером.</p>'+
+    '<h4>5. Проверка подлинности</h4><p>Статус чека проверяется в Telegram-боте по его номеру. Форма проверки на сайте носит информационный характер. Сервис не несёт ответственности за чеки, полученные не через официальный бот.</p>'+
+    '<h4>6. Утеря доступа</h4><p>При потере доступа к Telegram-аккаунту обратитесь к менеджеру. Восстановление возможно после подтверждения личности и данных транзакции (хеш перевода, сумма, время).</p>'},
+  aml:{t:'AML/KYC-политика',u:'Редакция от 1 июня 2026 года',b:
+    '<h4>1. Цель политики</h4><p>Политика направлена на предотвращение использования Сервиса для отмывания доходов, финансирования терроризма и обхода санкционных режимов в соответствии с требованиями законодательства ОАЭ и международных стандартов FATF.</p>'+
+    '<h4>2. Мониторинг транзакций</h4><p>Каждая входящая криптовалютная транзакция проверяется системами блокчейн-аналитики: оценивается связь адреса с миксерами, даркнет-площадками, санкционными списками (OFAC, EU, UN), взломами и мошенническими схемами.</p>'+
+    '<h4>3. Пороги идентификации</h4><ul><li><b>До 3 000 USD</b> — идентификация, как правило, не требуется.</li><li><b>От 3 000 до 15 000 USD</b> — паспорт или Emirates ID.</li><li><b>Свыше 15 000 USD</b> — документ, удостоверяющий личность, и подтверждение происхождения средств.</li></ul>'+
+    '<h4>4. Основания для приостановки выдачи</h4><ul><li>Высокий риск-скоринг адреса отправителя.</li><li>Дробление сумм с целью обхода порогов идентификации.</li><li>Отказ предоставить запрошенные документы.</li><li>Признаки действия Клиента в интересах третьего лица без раскрытия бенефициара.</li></ul>'+
+    '<h4>5. Сроки проверки</h4><p>Стандартная проверка — до 24 часов, расширенная — до 5 рабочих дней. На время проверки выдача наличных приостанавливается, о чём Клиент уведомляется менеджером.</p>'+
+    '<h4>6. Хранение данных</h4><p>Документы идентификации хранятся 5 лет с момента операции в зашифрованном виде и предоставляются уполномоченным органам исключительно по законному запросу.</p>'+
+    '<h4>7. Ограничения</h4><p>Сервис не обслуживает лиц из санкционных перечней, резидентов юрисдикций под международными санкциями, а также публичных должностных лиц без расширенной проверки.</p>'},
+  privacy:{t:'Политика конфиденциальности',u:'Редакция от 1 июня 2026 года',b:
+    '<h4>1. Какие данные мы собираем</h4><ul><li>Telegram-идентификатор и имя пользователя.</li><li>Данные заявки: сумма, монета, валюта выдачи, хеш транзакции.</li><li>Документы идентификации — только при превышении AML-порогов.</li><li>Технические данные сайта: IP-адрес, тип браузера, cookie.</li><li>Запись системы видеонаблюдения офиса при визите в кассу.</li></ul>'+
+    '<h4>2. Цели обработки</h4><p>Исполнение заявки и выдача наличных, соблюдение AML-требований, предотвращение мошенничества, обеспечение безопасности офиса, поддержка клиентов.</p>'+
+    '<h4>3. Передача третьим лицам</h4><p>Персональные данные не продаются и не передаются в маркетинговых целях. Передача возможна уполномоченным органам ОАЭ на основании законного запроса.</p>'+
+    '<h4>4. Сроки хранения</h4><p>Данные заявок и документы идентификации — 5 лет. Записи видеонаблюдения — 90 дней. Технические логи сайта — 12 месяцев.</p>'+
+    '<h4>5. Защита</h4><p>Шифрование канала TLS 1.3, шифрование хранимых документов, разграничение доступа сотрудников, физическая охрана офиса и кассы.</p>'+
+    '<h4>6. Права клиента</h4><p>Запрос копии данных, их исправления или удаления направляется на legal@swapzone.example и рассматривается в течение 30 дней. Удаление невозможно в части данных, хранение которых обязательно по AML-требованиям.</p>'},
+  cookie:{t:'Политика использования файлов cookie',u:'Редакция от 1 июня 2026 года',b:
+    '<h4>1. Что такое cookie</h4><p>Cookie — небольшие текстовые файлы, сохраняемые браузером при посещении сайта, которые позволяют распознавать устройство при повторных визитах.</p>'+
+    '<h4>2. Какие cookie мы используем</h4><ul><li><b>Строго необходимые</b> — работа калькулятора и форм. Отключение недоступно.</li><li><b>Функциональные</b> — сохранение выбранной монеты и валюты выдачи.</li><li><b>Аналитические</b> — обезличенная статистика посещаемости.</li><li><b>Партнёрские</b> — фиксация источника перехода на 30 дней для начисления вознаграждения.</li></ul>'+
+    '<h4>3. Управление</h4><p>Файлы cookie можно удалить или заблокировать в настройках браузера. Отключение строго необходимых файлов может нарушить работу сайта.</p>'},
+  risk:{t:'Раскрытие рисков',u:'Редакция от 1 июня 2026 года',b:
+    '<h4>1. Рыночный риск</h4><p>Стоимость цифровых активов подвержена значительным колебаниям. До момента фиксации курса менеджером сумма к выдаче может измениться.</p>'+
+    '<h4>2. Технологический риск</h4><p>Транзакции в блокчейне необратимы. Отправка средств на неверный адрес, в неверную сеть или без указания memo/tag приводит к безвозвратной утрате активов.</p>'+
+    '<h4>3. Риск при обращении с наличными</h4><p>После выдачи наличных ответственность за их сохранность несёт Клиент. Рекомендуем пересчитывать сумму в офисе, не афишировать факт получения средств и планировать перемещение заранее. По запросу возможно сопровождение до автомобиля.</p>'+
+    '<h4>4. Регуляторный риск</h4><p>Правовой статус операций с цифровыми активами различается по юрисдикциям и может изменяться. Клиент самостоятельно оценивает законность операции для себя.</p>'+
+    '<h4>5. Налоговые обязательства</h4><p>Обязанность декларирования дохода и уплаты налогов лежит на Клиенте. Сервис не выступает налоговым агентом.</p>'+
+    '<h4>6. Отсутствие гарантий</h4><p>Операции с цифровыми активами не покрываются системами страхования вкладов. Сервис не даёт инвестиционных рекомендаций и не гарантирует доходность.</p>'}
+};
+var modal = $('#modal');
+function openModal(key){
+  var d = DOCS[key];
+  if(!d) return;
+  $('#modalContent').innerHTML = '<h3>' + d.t + '</h3><div class="upd">' + d.u + '</div>' + d.b;
+  modal.classList.add('open');
+  document.body.classList.add('lock');
+  modal.querySelector('.modal-box').scrollTop = 0;
+}
+function closeModal(){
+  modal.classList.remove('open');
+  if(!mmenu.classList.contains('open')) document.body.classList.remove('lock');
+}
+document.addEventListener('click', function(e){
+  var trg = e.target.closest ? e.target.closest('[data-modal]') : null;
+  if(trg){ e.preventDefault(); openModal(trg.getAttribute('data-modal')); return; }
+  if(e.target.hasAttribute && e.target.hasAttribute('data-close')) closeModal();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){ closeModal(); closeLists(); }
+});
+
+/* ================= COOKIE ================= */
+var cookieBar = $('#cookie'), accepted = false;
+setTimeout(function(){ if(!accepted) cookieBar.classList.add('show'); }, 1800);
+$('#cookieOk').addEventListener('click', function(){ accepted = true; cookieBar.classList.remove('show'); });
+
+/* ================= АНИМАЦИИ ================= */
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(en){
+    if(en.isIntersecting){
+      en.target.classList.add('in');
+      var bar = en.target.querySelector ? en.target.querySelector('.bar i') : null;
+      if(bar) bar.style.width = bar.getAttribute('data-w') + '%';
+      io.unobserve(en.target);
+    }
+  });
+}, {threshold:.12});
+$$('.reveal').forEach(function(el, i){
+  el.style.transitionDelay = (i % 4) * 70 + 'ms';
+  io.observe(el);
+});
+
+var cio = new IntersectionObserver(function(entries){
+  entries.forEach(function(en){
+    if(!en.isIntersecting) return;
+    var el = en.target, target = parseInt(el.getAttribute('data-count'), 10);
+    var start = performance.now(), dur = 1400;
+    (function tick(now){
+      var p = Math.min(1, (now - start) / dur);
+      var v = Math.floor(target * (1 - Math.pow(1 - p, 3)));
+      el.textContent = v.toLocaleString('ru-RU');
+      if(p < 1) requestAnimationFrame(tick);
+    })(start);
+    cio.unobserve(el);
+  });
+}, {threshold:.5});
+$$('[data-count]').forEach(function(el){ cio.observe(el); });
+
+/* ================= ОБНОВЛЕНИЕ КУРСОВ ================= */
+setInterval(function(){
+  CRYPTO.forEach(function(x){
+    if(x.c !== 'USDT' && x.c !== 'USDC') x.usd = x.usd * (1 + (Math.random() - 0.5) * 0.004);
+  });
+  refreshMins();
+  syncUI();
+  calc('give');
+  renderRates(curFilter, curQuery);
+  $('#rateTime').textContent = 'только что';
+}, 30000);
+
+/* ================= СТАРТ ================= */
+$('#year').textContent = new Date().getFullYear();
+/* единая точка правки адреса бота: все кнопки берут его из CFG.botUrl */
+$$('a[href^="https://t.me/SwapZoneBot"]').forEach(function(a){ a.href = CFG.botUrl; });
+syncUI();
+giveInp.value = byKey[state.give].min;
+calc('give');
+renderRates('all','');
+})();
+</script>
+</body>
+</html>
